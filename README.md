@@ -137,18 +137,3 @@ parses one command, `switches` validates and mutates `GameState` through
 * **CLO-3** - deterministic output, byte-stable savegame/summary, state restored
   across sessions with `--load`.
 
-## Submission checklist
-
-```sh
-git remote -v                                   # points at the fork of the template
-git tag -a v1.0.i260056-i262127 -m "The Last Train v1.0.i260056-i262127"
-git push origin main --tags
-```
-
-The fork is already named `PF-Project-TheLastTrain-i260056-i262127` after the two
-roll numbers, so the tag carries both (`v1.0.i260056-i262127`); if your marker
-expects a single number, use `v1.0.i260056` instead. Keep the directory layout
-(`include`, `src/core`, `data`, `out`, `docs`). `docs/Flowchart.png` is generated
-from `docs/flowchart.svg` and `docs/Project_Diagram.jpg` from
-`docs/project_diagram.svg`; `docs/ConsoleUI.png` is the terminal capture of the
-running game at the F1-R1 prompt.

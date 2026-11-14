@@ -21,7 +21,6 @@
 
   <rect x="0" y="0" width="1600" height="1400" fill="#ffffff"/>
   <text x="60" y="54" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="bold" fill="#1c2b3a">The Last Train — Program Flowchart</text>
-  <text x="60" y="84" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#5b6b7b">Deterministic C++17 console game · main_core → simulator → switches → physics → logger</text>
 
   <!-- main column -->
   <rect class="term" x="420" y="110" width="200" height="50" rx="25"/>

@@ -88,6 +88,6 @@ AUDIT TRAIL
 61. Turn 61: The cabinet clicks open: +30 points. A Train Key (^) is inside. [-1E, -1T]
 62. Turn 62: Train Key collected: +10 points. [-1E, -1T]
 63. Turn 63: You move to F5-R2 (Train Boarding Platform) via door. [-2E, -1T]
-64. Turn 64: You board the train with the passenger and the cat: +100 points. Full mission bonus: +100 points. Final score 
+64. Turn 64: You board the train with the passenger and the cat: +100 points. Full mission bonus: +100 points. Final score 520/520. [-1E, -1T]
 
 END OF REPORT

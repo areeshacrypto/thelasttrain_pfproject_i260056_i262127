@@ -1,30 +1,38 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-// Small, dependency-free text helpers shared by every module.
 namespace util {
 
-// Trims leading/trailing whitespace in place and returns the new length.
+// Removes spaces and newlines from the start and end of a string
 int trimInPlace(char* text);
 
-// Uppercases an ASCII string in place (used for command tokens).
+// Converts all lowercase letters in a string to uppercase
 void toUpperInPlace(char* text);
 
-// Splits text on runs of whitespace in place. Returns the token count and
-// stores at most maxTokens pointers in tokens.
+// Breaks a command line into separate words separated by spaces
 int splitTokens(char* text, char* tokens[], int maxTokens);
 
-// Strict decimal parse: the whole string must be an optional sign plus digits.
+// Converts a text string into an integer if all characters are valid digits
 bool parseIntStrict(const char* text, int* value);
 
-// Bounded copy that always NUL-terminates (cap includes the terminator).
+// Safely copies src into dest without exceeding cap
 void copyText(char* dest, int cap, const char* src);
 
+// Returns true if text begins with prefix
 bool startsWith(const char* text, const char* prefix);
 
-// Case-insensitive comparison for ASCII identifiers such as room/item ids.
+// Compares two strings ignoring uppercase/lowercase differences
 bool equalsIgnoreCase(const char* a, const char* b);
+
+// Appends a string onto the end of dest safely
+void appendStr(char* dest, int cap, const char* src);
+
+// Appends a single character onto the end of dest safely
+void appendChar(char* dest, int cap, char ch);
+
+// Converts an integer to text and appends it onto the end of dest
+void appendInt(char* dest, int cap, int value);
 
 }  // namespace util
 
-#endif  // UTIL_H
+#endif

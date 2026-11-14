@@ -1,0 +1,18 @@
+# Build artefacts
+last_train
+last_train.exe
+*.o
+*.obj
+
+# IDE / build directories
+build/
+cmake-build-*/
+.vscode/
+.idea/
+
+# OS noise
+Thumbs.db
+.DS_Store
+
+# macOS metadata
+._*

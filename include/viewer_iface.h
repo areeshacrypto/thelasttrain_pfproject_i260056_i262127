@@ -1,18 +1,19 @@
 #ifndef VIEWER_IFACE_H
 #define VIEWER_IFACE_H
 
+#include "level.h"
 #include "state.h"
 
-// Terminal Visualization using primitive variables
-void renderDashboard(int playerFloor, int playerRoom, int energy, int time, int score,
-                     const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount,
-                     int emergencyTripsLeft);
+// Presentation only. The core never prints game rules on its own, which
+// keeps the simulation and the console UI separable.
+namespace viewer {
 
-void renderRoomDetails(int floor, int room,
-                       const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                       int entityCount);
+void printBanner();
+void printStatus(const BuildingMap* map, const GameState* state);
+void printMapOverview(const BuildingMap* map, const GameState* state);
+void printHelp();
+void printResult(const BuildingMap* map, const GameState* state);
 
-void renderAsciiBuilding(int playerFloor, int playerRoom);
-void renderObjectivesChecklist(const bool objectives[NUM_OBJECTIVES]);
+}  // namespace viewer
 
-#endif // VIEWER_IFACE_H
+#endif  // VIEWER_IFACE_H

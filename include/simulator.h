@@ -1,47 +1,20 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <cstdio>
+
+#include "level.h"
 #include "state.h"
 
-// Lifecycle controllers using primitive variables
-void runSimulation(int& playerFloor, int& playerRoom,
-                   int& energy, int& time, int& score,
-                   char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
-                   bool objectives[NUM_OBJECTIVES], int& emergencyTripsLeft,
-                   char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
-                   char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                   int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR]);
+// Runs the command loop until victory, defeat, quit, or EOF.
+// echoCommands = true replays script input into stdout so a transcript
+// shows exactly which commands produced the output.
+// Returns 0 for victory, 1 for defeat, 2 for incomplete/error.
+namespace simulator {
 
-bool handleMoveCommand(int targetFloor, int targetRoom,
-                       int& currentFloor, int& currentRoom,
-                       int& energy, int& time,
-                       const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
-                       const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount,
-                       int& emergencyTripsLeft, bool lift2Operational);
+int runSimulation(const BuildingMap* map, GameState* state, std::FILE* input,
+                  bool echoCommands);
 
-bool handleInspectCommand(int currentFloor, int currentRoom,
-                          int& energy, int& time,
-                          const char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                          int entityCount,
-                          bool objectives[NUM_OBJECTIVES], int& score);
+}  // namespace simulator
 
-bool handleCollectCommand(char itemSymbol, int currentFloor, int currentRoom,
-                          int& energy, int& time, int& score,
-                          char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                          int& entityCount,
-                          char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
-                          bool objectives[NUM_OBJECTIVES]);
-
-bool handleUseCommand(char itemSymbol, int currentFloor, int currentRoom,
-                      int& energy, int& time, int& score,
-                      char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount,
-                      bool objectives[NUM_OBJECTIVES]);
-
-bool handleUnlockCabinetCommand(const char* code, int currentFloor, int currentRoom,
-                                bool objectives[NUM_OBJECTIVES], int& score,
-                                char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM],
-                                int& entityCount);
-
-bool checkEndConditions(int energy, int time, const bool objectives[NUM_OBJECTIVES]);
-
-#endif // SIMULATOR_H
+#endif  // SIMULATOR_H

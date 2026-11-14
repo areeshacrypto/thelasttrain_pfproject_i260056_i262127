@@ -1,50 +1,77 @@
-#include "simulator.h"
+#include <cstdio>
+#include <cstring>
+
+#include "config.h"
 #include "level.h"
 #include "logger.h"
+#include "simulator.h"
+#include "state.h"
 #include "viewer_iface.h"
-#include <iostream>
 
-int main() {
-    // Player State Primitives
-    int playerFloor = 1;
-    int playerRoom = 1;
-    int energy = INITIAL_ENERGY;
-    int time = INITIAL_TIME;
-    int score = INITIAL_SCORE;
-    
-    char inventory[MAX_INVENTORY_CAPACITY];
-    int inventoryCount = 0;
-    int emergencyTripsLeft = 0;
+int main(int argc, char** argv) {
+    const char* scriptPath = nullptr;
+    bool loadSave = false;
 
-    // Objective State Booleans
-    bool objectives[NUM_OBJECTIVES] = { false };
-
-    // Building Connectivity & Entity Parallel Matrices
-    char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1];
-    char roomEntities[NUM_FLOORS][ROOMS_PER_FLOOR][MAX_ENTITIES_PER_ROOM];
-    int entityCounts[NUM_FLOORS][ROOMS_PER_FLOOR] = { 0 };
-
-    const char* mapFile = "data/building.txt";
-    const char* initStateFile = "data/initial-state.txt";
-
-    if (!loadBuildingMap(mapFile, horizontalConn, roomEntities, entityCounts)) {
-        std::cerr << "Error: Could not load " << mapFile << "\n";
-        return 1;
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--load") == 0) {
+            loadSave = true;
+        } else if (argv[i][0] == '-') {
+            std::fprintf(stderr, "Unknown option: %s\n", argv[i]);
+            return 2;
+        } else if (scriptPath == nullptr) {
+            scriptPath = argv[i];
+        } else {
+            std::fprintf(stderr, "Only one script path may be given.\n");
+            return 2;
+        }
     }
 
-    if (!loadInitialState(initStateFile, playerFloor, playerRoom, energy, time, score,
-                          inventory, inventoryCount, objectives, emergencyTripsLeft)) {
-        std::cerr << "Error: Could not load " << initStateFile << "\n";
-        return 1;
+    viewer::printBanner();
+    std::printf("Goal: rescue the passenger and the cat, then board the train at F5-R2.\n");
+    std::printf("Maximum score: %d points. Type HELP inside the game.\n", cfg::kMaxScore);
+
+    BuildingMap map;
+    char error[256];
+    if (!loadBuildingMap(cfg::kPathBuilding, &map, error,
+                         static_cast<int>(sizeof error))) {
+        std::fprintf(stderr, "Fatal: %s\n", error);
+        return 2;
     }
 
-    std::cout << "===========================================\n";
-    std::cout << " THE LAST TRAIN - SIMULATION INITIALIZED   \n";
-    std::cout << "===========================================\n";
+    int startRoom = findRoom(&map, "F1-R1");
+    if (!validateStartingRoom(&map, startRoom)) {
+        startRoom = 0;
+    }
 
-    runSimulation(playerFloor, playerRoom, energy, time, score,
-                  inventory, inventoryCount, objectives, emergencyTripsLeft,
-                  horizontalConn, roomEntities, entityCounts);
+    GameState state;
+    initGameState(&state, startRoom);
+    logger::resetAudit();
 
-    return 0;
+    const char* statePath = loadSave ? cfg::kPathSaveGame : cfg::kPathInitialState;
+    if (logger::loadGameStateFromFile(&state, &map, statePath, error,
+                                      static_cast<int>(sizeof error))) {
+        std::printf("State loaded from %s\n", statePath);
+    } else {
+        std::fprintf(stderr, "Warning: %s\n", error);
+        std::fprintf(stderr, "Starting with built-in defaults.\n");
+        initGameState(&state, startRoom);
+    }
+
+    std::FILE* input = stdin;
+    bool echoCommands = false;
+    if (scriptPath != nullptr) {
+        input = std::fopen(scriptPath, "r");
+        if (input == nullptr) {
+            std::fprintf(stderr, "Fatal: cannot open script %s\n", scriptPath);
+            return 2;
+        }
+        echoCommands = true;
+    }
+
+    const int exitCode = simulator::runSimulation(&map, &state, input, echoCommands);
+
+    if (input != stdin) {
+        std::fclose(input);
+    }
+    return exitCode;
 }

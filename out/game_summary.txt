@@ -1,0 +1,93 @@
+THE LAST TRAIN - SESSION SUMMARY
+================================
+Result       : VICTORY
+Turn count   : 64
+Final room   : F5-R2 (Train Boarding Platform)
+Energy       : 16 / 100
+Time         : 7 / 100
+Final score  : 520 / 520
+Cabinet code : 4 2 7 (unlocked)
+
+OBJECTIVE CHECKLIST
+-------------------
+[x] Master Key collected                         +10
+[x] Clue digit 4 found                           +10
+[x] Clue digit 2 found                           +10
+[x] Clue digit 7 found                           +10
+[x] Security cabinet unlocked (427)              +30
+[x] Train Key acquired                           +10
+[x] Injured passenger rescued                    +100
+[x] Cat secured in carrier                       +100
+[x] Fuse installed at Control Panel              +20
+[x] Lift Pass collected                          +20
+[x] Train prepared and boarded                   +100
+[x] Full mission victory bonus                   +100
+
+AUDIT TRAIL
+-----------
+01. Turn 1: You move to F1-R2 (Reception) via window. [-3E, -2T]
+02. Turn 2: Master Key collected: +10 points. It opens the locked door on floor 3. [-1E, -1T]
+03. Turn 3: You move to F1-R1 (Entrance Lobby) via window. [-3E, -2T]
+04. Turn 4: You move to F2-R1 (Lounge) via staircase. [-2E, -1T]
+05. Turn 5: You move to F3-R1 (Stairwell Annex) via staircase. [-2E, -1T]
+06. Turn 6: You move to F3-R2 (Security Vestibule) via locked door. [-2E, -1T]
+07. Turn 7: Clue digit 4 found: +10 points. Code so far: 4 _ _ [-1E, -1T]
+08. Turn 8: Fuse collected. [-1E, -1T]
+09. Turn 9: You move to F3-R3 (Animal Room) via window. [-3E, -2T]
+10. Turn 10: You move to F3-R4 (Control Room) via door. [-2E, -1T]
+11. Turn 11: Lift Pass collected: +20 points. Lift 2 runs normally once the Fuse is installed. [-1E, -1T]
+12. Turn 12: Fuse installed in the Control Panel: +20 points. Lift 2 needs the Lift Pass to run normally. [-1E, -1T]
+13. Turn 13: You move to F3-R3 (Animal Room) via door. [-2E, -1T]
+14. Turn 14: You move to F3-R2 (Security Vestibule) via window. [-3E, -2T]
+15. Turn 15: You move to F3-R1 (Stairwell Annex) via locked door. [-2E, -1T]
+16. Turn 16: You move to F2-R1 (Lounge) via staircase. [-2E, -1T]
+17. Turn 17: You move to F2-R2 (Archive) via door. [-2E, -1T]
+18. Turn 18: You move to F1-R3 (Waiting Area) via lift 1. [-4E, -3T]
+19. Turn 19: You move to F1-R4 (Utility Room) via door. [-2E, -1T]
+20. Turn 20: Energy Pack collected: +25 energy (85/100). [-1E, -1T]
+21. Turn 21: Energy Pack collected: +25 energy (100/100). [-1E, -1T]
+22. Turn 22: You move to F1-R3 (Waiting Area) via door. [-2E, -1T]
+23. Turn 23: You move to F2-R3 (Lab) via lift 1. [-4E, -3T]
+24. Turn 24: You move to F2-R4 (Meeting Room) via door. [-2E, -1T]
+25. Turn 25: You move to F4-R4 (Office) via lift 2. [-4E, -3T]
+26. Turn 26: You move to F4-R3 (Maintenance Corridor) via door. [-2E, -1T]
+27. Turn 27: Clue digit 2 found: +10 points. Code so far: 4 2 _ [-1E, -1T]
+28. Turn 28: You move to F4-R4 (Office) via door. [-2E, -1T]
+29. Turn 29: You move to F5-R4 (Observation Deck) via lift 2. [-4E, -3T]
+30. Turn 30: You move to F5-R3 (Storage Room) via window. [-3E, -2T]
+31. Turn 31: Cat Carrier collected. [-1E, -1T]
+32. Turn 32: You move to F5-R4 (Observation Deck) via window. [-3E, -2T]
+33. Turn 33: You move to F2-R4 (Meeting Room) via lift 2. [-4E, -3T]
+34. Turn 34: You move to F2-R3 (Lab) via door. [-2E, -1T]
+35. Turn 35: You move to F1-R2 (Reception) via lift 1. [-4E, -3T]
+36. Turn 36: You move to F1-R1 (Entrance Lobby) via window. [-3E, -2T]
+37. Turn 37: You move to F2-R1 (Lounge) via staircase. [-2E, -1T]
+38. Turn 38: You move to F3-R1 (Stairwell Annex) via staircase. [-2E, -1T]
+39. Turn 39: You move to F3-R2 (Security Vestibule) via locked door. [-2E, -1T]
+40. Turn 40: You move to F3-R3 (Animal Room) via window. [-3E, -2T]
+41. Turn 41: The cat is secured in the carrier: +100 points. [-1E, -1T]
+42. Turn 42: You move to F3-R2 (Security Vestibule) via window. [-3E, -2T]
+43. Turn 43: You move to F3-R1 (Stairwell Annex) via locked door. [-2E, -1T]
+44. Turn 44: You move to F2-R1 (Lounge) via staircase. [-2E, -1T]
+45. Turn 45: You move to F1-R1 (Entrance Lobby) via staircase. [-2E, -1T]
+46. Turn 46: You move to F1-R2 (Reception) via window. [-3E, -2T]
+47. Turn 47: You move to F2-R3 (Lab) via lift 1. [-4E, -3T]
+48. Turn 48: Emergency Toolkit collected: +15 energy (47/100). [-1E, -1T]
+49. Turn 49: You move to F2-R4 (Meeting Room) via door. [-2E, -1T]
+50. Turn 50: You move to F5-R4 (Observation Deck) via lift 2. [-4E, -3T]
+51. Turn 51: You move to F5-R3 (Storage Room) via window. [-3E, -2T]
+52. Turn 52: You move to F5-R2 (Train Boarding Platform) via door. [-2E, -1T]
+53. Turn 53: You move to F5-R1 (Security Room) via door. [-2E, -1T]
+54. Turn 54: You move to F4-R1 (First Aid Station) via staircase. [-2E, -1T]
+55. Turn 55: You move to F4-R2 (Medical Room) via window. [-3E, -2T]
+56. Turn 56: Medical Kit collected. [-1E, -1T]
+57. Turn 57: You move to F4-R1 (First Aid Station) via window. [-3E, -2T]
+58. Turn 58: The passenger is treated and can move: +100 points. [-1E, -1T]
+59. Turn 59: You move to F5-R1 (Security Room) via staircase. [-2E, -1T]
+60. Turn 60: Clue digit 7 found: +10 points. Code so far: 4 2 7 [-1E, -1T]
+61. Turn 61: The cabinet clicks open: +30 points. A Train Key (^) is inside. [-1E, -1T]
+62. Turn 62: Train Key collected: +10 points. [-1E, -1T]
+63. Turn 63: You move to F5-R2 (Train Boarding Platform) via door. [-2E, -1T]
+64. Turn 64: You board the train with the passenger and the cat: +100 points. Full mission bonus: +100 points. Final score 
+
+END OF REPORT

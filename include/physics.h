@@ -1,22 +1,30 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include "level.h"
 #include "state.h"
 
-// Movement validation, connectivity & resource adjustments
-bool isDirectlyConnected(int fromF, int fromR, int toF, int toR,
-                         const char horizontalConn[NUM_FLOORS][ROOMS_PER_FLOOR - 1],
-                         char& outConnType);
+// The "physics" layer owns the resource economy: what an action costs, how
+// resources are clamped, and when the mission is lost.
+struct Cost {
+    int energy;
+    int time;
+};
 
-bool canTraverse(int targetFloor, int targetRoom, char connType,
-                 const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount,
-                 int emergencyTripsLeft, bool lift2Operational);
+Cost costForMove(LinkType type);
+Cost costInspect();
+Cost costPickup();
+Cost costUse();
 
-void applyResourceDelta(int& energy, int& time, int deltaEnergy, int deltaTime);
-void applyScoreDelta(int& score, int deltaScore);
+void applyCost(GameState* state, const Cost& cost);
+void addEnergy(GameState* state, int delta);
+void addTime(GameState* state, int delta);
 
-bool hasItem(const char inventory[MAX_INVENTORY_CAPACITY], int inventoryCount, char itemSymbol);
-bool addItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol);
-bool removeItem(char inventory[MAX_INVENTORY_CAPACITY], int& inventoryCount, char itemSymbol);
+// Clamps energy/time into [0, 100] without checking failure.
+void clampResources(GameState* state);
 
-#endif // PHYSICS_H
+// Clamps, then marks the run as lost if energy or time reached zero.
+// Returns true when the game is over. Never overwrites a victory.
+bool resolveDefeat(GameState* state);
+
+#endif  // PHYSICS_H

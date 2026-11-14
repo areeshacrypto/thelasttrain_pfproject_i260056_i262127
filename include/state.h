@@ -1,51 +1,95 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include <cstdio>
+
 #include "config.h"
 
-// Connection Type Constants (Stored in char or int 2D matrices)
-const char CONN_NONE        = ' ';
-const char CONN_DOOR        = 'D'; // Ordinary door
-const char CONN_WINDOW      = 'W'; // Window traversal
-const char CONN_LOCKED_DOOR = 'L'; // Locked door (requires Master Key)
-const char CONN_SOLID_WALL  = '#'; // Wall partition (impassable)
+// Stable item identifiers. The textual ids in data/building.txt are mapped
+// onto these values by level.cpp, so the simulation logic never matches on
+// strings.
+enum ItemId {
+    IT_MASTER_KEY = 0,
+    IT_ENERGY_PACK_A,
+    IT_ENERGY_PACK_B,
+    IT_TOOLKIT,
+    IT_CLUE_FOUR,
+    IT_FUSE,
+    IT_CAT,
+    IT_PANEL,
+    IT_LIFT_PASS,
+    IT_PASSENGER,
+    IT_MEDKIT,
+    IT_ACCESS_CARD,
+    IT_CLUE_TWO,
+    IT_CLUE_SEVEN,
+    IT_CABINET,
+    IT_TRAIN_KEY,
+    IT_CAT_CARRIER,
+    IT_OBSERVATION_TOKEN,
+    IT_COUNT
+};
 
-// Entity / Item Character Symbols (Stored in 2D/3D char arrays)
-const char ENT_NONE             = ' ';
-const char ENT_MASTER_KEY       = '<'; // Master Key
-const char ENT_ENERGY_PACK      = ')'; // Energy Pack
-const char ENT_EMERGENCY_TOOLKIT= '\\';// Emergency Toolkit
-const char ENT_CLUE_4           = '4'; // Clue Digit 4
-const char ENT_FUSE             = '*'; // Fuse
-const char ENT_CAT              = '~'; // Stranded Cat
-const char ENT_CONTROL_PANEL    = ';'; // Control Panel Terminal
-const char ENT_LIFT_PASS        = '('; // Lift Pass
-const char ENT_PASSENGER        = '!'; // Stranded Passenger
-const char ENT_MEDICAL_KIT      = '%'; // Medical Kit
-const char ENT_EMERGENCY_CARD   = '$'; // Emergency Access Card
-const char ENT_CLUE_2           = '2'; // Clue Digit 2
-const char ENT_CLUE_7           = '7'; // Clue Digit 7
-const char ENT_CABINET_TRAIN_KEY= '^'; // Cabinet / Train Key
-const char ENT_CAT_CARRIER      = '@'; // Cat Carrier
-const char ENT_OBSERVATION_TOKEN= '&'; // Observation Token
+// The complete serialisable game state. POD only: no pointers, no classes,
+// so a snapshot is exactly what gets written to out/savegame.txt.
+struct GameState {
+    int energy;
+    int time;
+    int score;
+    int room;             // index into BuildingMap::rooms
+    int emergencyTrips;   // remaining Lift 2 trips before repair
+    int turn;             // accepted actions, used by the audit log
 
-// Index Constants for Parallel Objective Booleans
-const int OBJ_MASTER_KEY        = 0;
-const int OBJ_CLUE_4            = 1;
-const int OBJ_CLUE_2            = 2;
-const int OBJ_CLUE_7            = 3;
-const int OBJ_CABINET_UNLOCKED  = 4;
-const int OBJ_TRAIN_KEY         = 5;
-const int OBJ_FUSE_COLLECTED    = 6;
-const int OBJ_FUSE_INSTALLED    = 7;
-const int OBJ_LIFT_PASS         = 8;
-const int OBJ_LIFT2_ACTIVE      = 9;
-const int OBJ_PASSENGER_RESCUED = 10;
-const int OBJ_CAT_CARRIER       = 11;
-const int OBJ_CAT_SECURED       = 12;
-const int OBJ_TRAIN_PREPARED    = 13;
-const int OBJ_MISSION_WON       = 14;
-const int OBJ_MISSION_FAILED    = 15;
-const int NUM_OBJECTIVES        = 16;
+    bool clueFour;
+    bool clueTwo;
+    bool clueSeven;
 
-#endif // STATE_H
+    bool fuseInstalled;
+    bool cabinetUnlocked;
+    bool passengerRescued;
+    bool catSecured;
+    bool trainBoarded;
+
+    bool itemTaken[IT_COUNT];
+
+    bool over;
+    bool victory;
+};
+
+inline void initGameState(GameState* state, int startRoom) {
+    *state = GameState{};
+    state->energy = cfg::kStartEnergy;
+    state->time = cfg::kStartTime;
+    state->score = 0;
+    state->room = startRoom;
+    state->emergencyTrips = cfg::kStartEmergencyTrips;
+    state->turn = 0;
+}
+
+inline bool hasItem(const GameState* state, ItemId id) {
+    return state->itemTaken[id];
+}
+
+inline int clueCount(const GameState* state) {
+    int count = 0;
+    if (state->clueFour) ++count;
+    if (state->clueTwo) ++count;
+    if (state->clueSeven) ++count;
+    return count;
+}
+
+// True when every optional and mandatory objective is complete except the
+// final boarding action itself. Used to award the +100 mission bonus.
+inline bool isFullMission(const GameState* state) {
+    return state->itemTaken[IT_MASTER_KEY] && state->clueFour &&
+           state->clueTwo && state->clueSeven && state->cabinetUnlocked &&
+           state->itemTaken[IT_TRAIN_KEY] && state->passengerRescued &&
+           state->catSecured && state->fuseInstalled &&
+           state->itemTaken[IT_LIFT_PASS] && state->trainBoarded;
+}
+
+// Renders the discovered digits, e.g. "4 _ 7". Declared here and defined in
+// switches.cpp because it is shared by the HUD and the collect logic.
+void formatClueCode(const GameState* state, char* out, int cap);
+
+#endif  // STATE_H

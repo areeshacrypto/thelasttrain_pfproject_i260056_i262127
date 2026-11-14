@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1340" viewBox="0 0 2200 1340">
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2f5d9e"/>
+    </marker>
+    <style>
+      .grid   { stroke:#33475b; stroke-width:2; fill:none; }
+      .outer  { stroke:#33475b; stroke-width:3; fill:none; }
+      .rl     { font-family:"Segoe UI",Arial,sans-serif; font-size:13px; font-weight:600; fill:#1c2b3a; }
+      .rn     { font-family:"Segoe UI",Arial,sans-serif; font-size:10.5px; fill:#7b8a99; }
+      .wl     { font-family:"Segoe UI",Arial,sans-serif; font-size:12px; fill:#33475b; text-anchor:middle; }
+      .wlk    { font-family:"Segoe UI",Arial,sans-serif; font-size:11.5px; fill:#c0392b; text-anchor:middle; }
+      .el     { font-family:"Segoe UI",Arial,sans-serif; font-size:10.5px; fill:#4a5a6a; text-anchor:middle; }
+      .st     { font-family:"Segoe UI",Arial,sans-serif; font-size:13px; font-weight:600; fill:#1c2b3a; text-anchor:middle; }
+      .lf     { font-family:"Segoe UI",Arial,sans-serif; font-size:12px; font-weight:bold; fill:#33475b; text-anchor:middle; }
+      .ic     { stroke:#33475b; stroke-width:2; fill:none; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="2200" height="1340" fill="#ffffff"/>
+  <text x="50" y="58" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="bold" fill="#1c2b3a">The Last Train — Facility Blueprint</text>
+  <text x="50" y="90" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#5b6b7b">5 floors × 4 rooms (F1-R1 … F5-R4) · each internal segment is a Door, Window, Wall or Locked Door · staircases left, lifts right</text>
+
+  <!-- building outline -->
+  <rect class="outer" x="40" y="170" width="2100" height="1070" rx="2"/>
+  <line class="grid" x1="240" y1="170" x2="240" y2="1240"/>
+  <line class="grid" x1="1880" y1="170" x2="1880" y2="1240"/>
+
+  <!-- room grid -->
+  <g class="grid">
+    <line x1="240" y1="384" x2="1880" y2="384"/>
+    <line x1="240" y1="598" x2="1880" y2="598"/>
+    <line x1="240" y1="812" x2="1880" y2="812"/>
+    <line x1="240" y1="1026" x2="1880" y2="1026"/>
+    <line x1="650" y1="170" x2="650" y2="1240"/>
+    <line x1="1060" y1="170" x2="1060" y2="1240"/>
+    <line x1="1470" y1="170" x2="1470" y2="1240"/>
+  </g>
+  <!-- solid wall: F4-R2 | F4-R3 -->
+  <line x1="1060" y1="384" x2="1060" y2="598" stroke="#33475b" stroke-width="6"/>
+
+  <!-- room titles -->
+  <g>
+    <text class="rl" x="254" y="198">Floor 5</text><text class="rl" x="254" y="218">Room 1</text>
+    <text class="rn" x="254" y="237">Security</text>
+    <text class="rl" x="664" y="198">Floor 5</text><text class="rl" x="664" y="218">Room 2</text>
+    <text class="rn" x="664" y="237">Boarding Platform</text>
+    <text class="rl" x="1074" y="198">Floor 5</text><text class="rl" x="1074" y="218">Room 3</text>
+    <text class="rn" x="1074" y="237">Storage</text>
+    <text class="rl" x="1484" y="198">Floor 5</text><text class="rl" x="1484" y="218">Room 4</text>
+    <text class="rn" x="1484" y="237">Observation Deck</text>
+
+    <text class="rl" x="254" y="412">Floor 4</text><text class="rl" x="254" y="432">Room 1</text>
+    <text class="rn" x="254" y="451">First Aid Station</text>
+    <text class="rl" x="664" y="412">Floor 4</text><text class="rl" x="664" y="432">Room 2</text>
+    <text class="rn" x="664" y="451">Medical Room</text>
+    <text class="rl" x="1074" y="412">Floor 4</text><text class="rl" x="1074" y="432">Room 3</text>
+    <text class="rn" x="1074" y="451">Maintenance Corridor</text>
+    <text class="rl" x="1484" y="412">Floor 4</text><text class="rl" x="1484" y="432">Room 4</text>
+    <text class="rn" x="1484" y="451">Office</text>
+
+    <text class="rl" x="254" y="626">Floor 3</text><text class="rl" x="254" y="646">Room 1</text>
+    <text class="rn" x="254" y="665">Stairwell Annex</text>
+    <text class="rl" x="664" y="626">Floor 3</text><text class="rl" x="664" y="646">Room 2</text>
+    <text class="rn" x="664" y="665">Security Vestibule</text>
+    <text class="rl" x="1074" y="626">Floor 3</text><text class="rl" x="1074" y="646">Room 3</text>
+    <text class="rn" x="1074" y="665">Animal Room</text>
+    <text class="rl" x="1484" y="626">Floor 3</text><text class="rl" x="1484" y="646">Room 4</text>
+    <text class="rn" x="1484" y="665">Control Room</text>
+
+    <text class="rl" x="254" y="840">Floor 2</text><text class="rl" x="254" y="860">Room 1</text>
+    <text class="rn" x="254" y="879">Lounge</text>
+    <text class="rl" x="664" y="840">Floor 2</text><text class="rl" x="664" y="860">Room 2</text>
+    <text class="rn" x="664" y="879">Archive</text>
+    <text class="rl" x="1074" y="840">Floor 2</text><text class="rl" x="1074" y="860">Room 3</text>
+    <text class="rn" x="1074" y="879">Lab</text>
+    <text class="rl" x="1484" y="840">Floor 2</text><text class="rl" x="1484" y="860">Room 4</text>
+    <text class="rn" x="1484" y="879">Meeting Room</text>
+
+    <text class="rl" x="254" y="1054">Floor 1</text><text class="rl" x="254" y="1074">Room 1</text>
+    <text class="rn" x="254" y="1093">Entrance Lobby</text>
+    <text class="rl" x="664" y="1054">Floor 1</text><text class="rl" x="664" y="1074">Room 2</text>
+    <text class="rn" x="664" y="1093">Reception</text>
+    <text class="rl" x="1074" y="1054">Floor 1</text><text class="rl" x="1074" y="1074">Room 3</text>
+    <text class="rn" x="1074" y="1093">Waiting Area</text>
+    <text class="rl" x="1484" y="1054">Floor 1</text><text class="rl" x="1484" y="1074">Room 4</text>
+    <text class="rn" x="1484" y="1093">Utility Room</text>
+  </g>
+
+  <!-- wall labels (white plate breaks the wall line) -->
+  <g>
+    <!-- F5 -->
+    <rect x="628" y="267" width="44" height="20" fill="#ffffff"/><text class="wl" x="650" y="281">Door</text>
+    <rect x="1038" y="267" width="44" height="20" fill="#ffffff"/><text class="wl" x="1060" y="281">Door</text>
+    <rect x="1441" y="267" width="58" height="20" fill="#ffffff"/><text class="wl" x="1470" y="281">Window</text>
+    <!-- F4 -->
+    <rect x="621" y="481" width="58" height="20" fill="#ffffff"/><text class="wl" x="650" y="495">Window</text>
+    <rect x="1036" y="481" width="48" height="20" fill="#ffffff"/><text class="wl" x="1060" y="495" font-weight="bold">Wall</text>
+    <rect x="1448" y="481" width="44" height="20" fill="#ffffff"/><text class="wl" x="1470" y="495">Door</text>
+    <!-- F3 -->
+    <rect x="606" y="695" width="88" height="20" fill="#ffffff"/><text class="wlk" x="650" y="709">Locked Door</text>
+    <rect x="1031" y="695" width="58" height="20" fill="#ffffff"/><text class="wl" x="1060" y="709">Window</text>
+    <rect x="1448" y="695" width="44" height="20" fill="#ffffff"/><text class="wl" x="1470" y="709">Door</text>
+    <!-- F2 -->
+    <rect x="628" y="909" width="44" height="20" fill="#ffffff"/><text class="wl" x="650" y="923">Door</text>
+    <rect x="1448" y="909" width="44" height="20" fill="#ffffff"/><text class="wl" x="1470" y="923">Door</text>
+    <!-- F1 -->
+    <rect x="621" y="1123" width="58" height="20" fill="#ffffff"/><text class="wl" x="650" y="1137">Window</text>
+    <rect x="1448" y="1123" width="44" height="20" fill="#ffffff"/><text class="wl" x="1470" y="1137">Door</text>
+  </g>
+
+  <!-- staircases -->
+  <g>
+    <path d="M220,384 H232" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,350 V570" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,350 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <path d="M232,570 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <rect x="60" y="361" width="160" height="46" rx="4" fill="#f5f7fa" stroke="#33475b" stroke-width="2"/>
+    <text class="st" x="140" y="389">Staircase 3</text>
+
+    <path d="M220,812 H232" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,780 V1005" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,780 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <path d="M232,1005 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <rect x="60" y="789" width="160" height="46" rx="4" fill="#f5f7fa" stroke="#33475b" stroke-width="2"/>
+    <text class="st" x="140" y="817">Staircase 2</text>
+
+    <path d="M220,1026 H232" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,955 V1200" stroke="#2f5d9e" stroke-width="2.5" fill="none"/>
+    <path d="M232,955 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <path d="M232,1200 H250" stroke="#2f5d9e" stroke-width="2.5" fill="none" marker-end="url(#arrB)"/>
+    <rect x="60" y="1003" width="160" height="46" rx="4" fill="#f5f7fa" stroke="#33475b" stroke-width="2"/>
+    <text class="st" x="140" y="1031">Staircase 1</text>
+  </g>
+
+  <!-- lift 1 shaft and cabins (F1/F2, R2-R3) -->
+  <g>
+    <line x1="1060" y1="1015" x2="1060" y2="1105" stroke="#33475b" stroke-width="2" stroke-dasharray="6,5"/>
+    <rect x="1015" y="905" width="90" height="110" rx="6" fill="#f5f7fa" stroke="#33475b" stroke-width="3"/>
+    <text class="lf" x="1060" y="950">LIFT 1</text>
+    <path d="M1060,970 V988 M1054,982 L1060,988 L1066,982" stroke="#33475b" stroke-width="2" fill="none"/>
+    <rect x="1015" y="1105" width="90" height="110" rx="6" fill="#f5f7fa" stroke="#33475b" stroke-width="3"/>
+    <text class="lf" x="1060" y="1150">LIFT 1</text>
+    <path d="M1060,1170 V1188 M1054,1182 L1060,1188 L1066,1182" stroke="#33475b" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- lift 2 shaft and cabins (F2/F4/F5, R4) -->
+  <g>
+    <line x1="2010" y1="330" x2="2010" y2="480" stroke="#33475b" stroke-width="2"/>
+    <line x1="2010" y1="590" x2="2010" y2="880" stroke="#33475b" stroke-width="2" stroke-dasharray="6,5"/>
+    <rect x="1920" y="220" width="180" height="110" rx="6" fill="#f5f7fa" stroke="#33475b" stroke-width="3"/>
+    <text class="lf" x="2010" y="272">LIFT 2</text>
+    <path d="M2010,288 V306 M2004,300 L2010,306 L2016,300" stroke="#33475b" stroke-width="2" fill="none"/>
+    <rect x="1920" y="480" width="180" height="110" rx="6" fill="#f5f7fa" stroke="#33475b" stroke-width="3"/>
+    <text class="lf" x="2010" y="532">LIFT 2</text>
+    <path d="M2010,548 V566 M2004,560 L2010,566 L2016,560" stroke="#33475b" stroke-width="2" fill="none"/>
+    <rect x="1920" y="880" width="180" height="110" rx="6" fill="#f5f7fa" stroke="#33475b" stroke-width="3"/>
+    <text class="lf" x="2010" y="932">LIFT 2</text>
+    <path d="M2010,948 V966 M2004,960 L2010,966 L2016,960" stroke="#33475b" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- F5 entities -->
+  <g>
+    <circle cx="398" cy="247" r="13" fill="#fff7d6" stroke="#b8860b" stroke-width="2"/>
+    <text x="398" y="252" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="bold" fill="#7a5b00" text-anchor="middle">7</text>
+    <text class="el" x="398" y="308">Clue 7</text>
+
+    <g class="ic">
+      <rect x="441" y="254" width="28" height="32" rx="2" fill="#f5f7fa"/>
+      <circle cx="455" cy="270" r="5"/>
+      <path d="M464,267 V273"/>
+    </g>
+    <text class="el" x="455" y="308">Cabinet</text>
+
+    <g class="ic">
+      <circle cx="505" cy="247" r="7"/>
+      <path d="M512,247 H536 M528,247 V254 M534,247 V254"/>
+    </g>
+    <text class="el" x="505" y="308">Train Key</text>
+
+    <g class="ic">
+      <rect x="825" y="260" width="60" height="24" rx="8" fill="#eef4fd"/>
+      <rect x="831" y="265" width="9" height="8" fill="#cfe0f5"/>
+      <rect x="844" y="265" width="9" height="8" fill="#cfe0f5"/>
+      <rect x="857" y="265" width="9" height="8" fill="#cfe0f5"/>
+      <rect x="870" y="265" width="9" height="8" fill="#cfe0f5"/>
+      <circle cx="839" cy="288" r="4" fill="#33475b"/>
+      <circle cx="871" cy="288" r="4" fill="#33475b"/>
+    </g>
+    <text class="el" x="855" y="318">Train — board here</text>
+
+    <g class="ic">
+      <rect x="1247" y="255" width="36" height="26" rx="3" fill="#f5f7fa"/>
+      <path d="M1256,247 q9,-7 18,0"/>
+      <path d="M1253,255 V281 M1261,255 V281 M1269,255 V281 M1277,255 V281" stroke="#9fb4d6" stroke-width="1.5"/>
+    </g>
+    <text class="el" x="1265" y="313">Cat Carrier</text>
+
+    <g class="ic">
+      <circle cx="1675" cy="265" r="13" fill="#ffffff"/>
+      <path d="M1675,265 V258 M1675,265 L1681,268"/>
+    </g>
+    <text class="el" x="1675" y="308">Observation Token +15T</text>
+  </g>
+
+  <!-- F4 entities -->
+  <g>
+    <g class="ic">
+      <circle cx="445" cy="473" r="6" fill="#ffffff"/>
+      <path d="M445,479 V497 M435,489 H455 M445,497 L438,507 M445,497 L452,507"/>
+    </g>
+    <text class="el" x="445" y="532">Injured Passenger</text>
+
+    <g class="ic">
+      <rect x="797" y="478" width="30" height="22" rx="3" fill="#ffffff" stroke="#c0392b"/>
+      <path d="M807,489 H817 M812,484 V494" stroke="#c0392b" stroke-width="2.5"/>
+    </g>
+    <text class="el" x="812" y="530">Medkit</text>
+
+    <g class="ic">
+      <rect x="885" y="478" width="30" height="20" rx="2" fill="#eef4fd"/>
+      <rect x="885" y="478" width="30" height="6" fill="#2f5d9e" stroke="none"/>
+    </g>
+    <text x="900" y="494" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" fill="#33475b" text-anchor="middle">CARD</text>
+    <text class="el" x="900" y="530">Access Card</text>
+
+    <circle cx="1265" cy="485" r="13" fill="#fff7d6" stroke="#b8860b" stroke-width="2"/>
+    <text x="1265" y="490" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="bold" fill="#7a5b00" text-anchor="middle">2</text>
+    <text class="el" x="1265" y="525">Clue 2</text>
+  </g>
+
+  <!-- F3 entities -->
+  <g>
+    <circle cx="812" cy="700" r="13" fill="#fff7d6" stroke="#b8860b" stroke-width="2"/>
+    <text x="812" y="705" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="bold" fill="#7a5b00" text-anchor="middle">4</text>
+    <text class="el" x="812" y="745">Clue 4</text>
+
+    <g class="ic">
+      <rect x="886" y="693" width="28" height="14" rx="2" fill="#f5f7fa"/>
+      <path d="M894,700 H897 L900,696 L904,704 L907,700 H910" stroke="#c0392b" stroke-width="1.8"/>
+    </g>
+    <text class="el" x="900" y="745">Fuse</text>
+
+    <g class="ic">
+      <circle cx="1265" cy="700" r="11" fill="#ffffff"/>
+      <path d="M1256,693 L1253,681 L1262,689 M1274,693 L1277,681 L1268,689"/>
+      <circle cx="1261" cy="703" r="1.3" fill="#33475b" stroke="none"/>
+      <circle cx="1269" cy="703" r="1.3" fill="#33475b" stroke="none"/>
+      <path d="M1255,705 H1249 M1255,708 H1249 M1275,705 H1281 M1275,708 H1281" stroke-width="1.2"/>
+    </g>
+    <text class="el" x="1265" y="745">Cat</text>
+
+    <g class="ic">
+      <rect x="1607" y="684" width="22" height="32" rx="3" fill="#fff7d6" stroke="#b8860b"/>
+      <path d="M1611,692 H1625 M1611,698 H1625 M1611,704 H1621" stroke="#b8860b" stroke-width="1.6"/>
+    </g>
+    <text x="1618" y="713" font-family="Segoe UI,Arial,sans-serif" font-size="7" fill="#7a5b00" text-anchor="middle">PASS</text>
+    <text class="el" x="1618" y="745">Lift Pass</text>
+
+    <g class="ic">
+      <rect x="1725" y="681" width="20" height="34" rx="2" fill="#f5f7fa"/>
+      <rect x="1729" y="685" width="12" height="9" fill="#cfe0f5" stroke-width="1"/>
+      <circle cx="1732" cy="702" r="1.6" fill="#33475b" stroke="none"/>
+      <circle cx="1738" cy="702" r="1.6" fill="#33475b" stroke="none"/>
+    </g>
+    <text class="el" x="1735" y="745">Control Panel</text>
+  </g>
+
+  <!-- F2 entities -->
+  <g>
+    <g class="ic">
+      <rect x="1248" y="902" width="34" height="18" rx="2" fill="#f5f7fa"/>
+      <path d="M1258,902 q7,-9 14,0"/>
+      <path d="M1263,902 V920 M1267,902 V920" stroke="#9fb4d6" stroke-width="1.4"/>
+    </g>
+    <text class="el" x="1265" y="952">Toolkit (+15E)</text>
+    <text class="el" x="945" y="923" font-weight="600" fill="#33475b">Lift 1</text>
+  </g>
+
+  <!-- F1 entities -->
+  <g>
+    <g class="ic">
+      <circle cx="855" cy="1125" r="7"/>
+      <path d="M862,1125 H886 M878,1125 V1132 M884,1125 V1132"/>
+    </g>
+    <text class="el" x="855" y="1170">Master Key</text>
+
+    <g class="ic">
+      <rect x="1624" y="1109" width="16" height="28" rx="2" fill="#eef4fd" stroke="#2f5d9e"/>
+      <rect x="1628" y="1105" width="8" height="4" fill="#2f5d9e" stroke="none"/>
+      <path d="M1635,1117 L1628,1126 H1633 L1629,1134" stroke="#c0392b" stroke-width="1.8"/>
+    </g>
+    <g class="ic">
+      <rect x="1694" y="1109" width="16" height="28" rx="2" fill="#eef4fd" stroke="#2f5d9e"/>
+      <rect x="1698" y="1105" width="8" height="4" fill="#2f5d9e" stroke="none"/>
+      <path d="M1705,1117 L1698,1126 H1703 L1699,1134" stroke="#c0392b" stroke-width="1.8"/>
+    </g>
+    <text class="el" x="1667" y="1170">Energy Packs (+25E each)</text>
+  </g>
+
+  <!-- footer -->
+  <text x="1100" y="1272" font-family="Segoe UI,Arial,sans-serif" font-size="11.5" fill="#7b8a99" text-anchor="middle">Door / Window / Wall / Locked Door plates mark every internal segment. Staircases and both lift shafts sit outside the 4-room grid.</text>
+  <text x="1100" y="1304" font-family="Segoe UI,Arial,sans-serif" font-size="15" font-style="italic" fill="#5b6b7b" text-anchor="middle">Figure 1: Facility Architectural Blueprint and Room Entity Distribution</text>
+</svg>

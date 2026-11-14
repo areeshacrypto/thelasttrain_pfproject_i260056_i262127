@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1400" viewBox="0 0 2200 1400">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1400" viewBox="0 0 1600 1400">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#33475b"/>
@@ -19,7 +19,7 @@
     </style>
   </defs>
 
-  <rect x="0" y="0" width="2200" height="1400" fill="#ffffff"/>
+  <rect x="0" y="0" width="1600" height="1400" fill="#ffffff"/>
   <text x="60" y="54" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="bold" fill="#1c2b3a">The Last Train — Program Flowchart</text>
   <text x="60" y="84" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#5b6b7b">Deterministic C++17 console game · main_core → simulator → switches → physics → logger</text>
 
@@ -125,27 +125,4 @@
   <!-- continue loop -->
   <path class="ln" d="M350,1268 L240,1268 L240,624 L298,624"/>
   <text class="lbl" x="52" y="1262">No — keep playing</text>
-
-  <!-- validation rules panel -->
-  <rect x="1580" y="110" width="560" height="640" rx="10" fill="#fbfcff" stroke="#9fb4d6" stroke-width="2"/>
-  <text x="1600" y="148" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="bold" fill="#1c2b3a">Checks inside “Action valid?”</text>
-  <text class="rule" x="1600" y="186">MOVE — adjacent link must exist (not a WALL)</text>
-  <text class="rule" x="1600" y="213">  · LOCKED door: requires Master Key</text>
-  <text class="rule" x="1600" y="240">  · Lift 2: Access Card (3 trips), then Lift Pass</text>
-  <text class="rule" x="1600" y="267"> </text>
-  <text class="rule" x="1600" y="294">COLLECT — item must be in this room</text>
-  <text class="rule" x="1600" y="321">  · Cat / Passenger: use Cat Carrier / Medkit</text>
-  <text class="rule" x="1600" y="348">  · Cabinet and Train Key are fixed objects</text>
-  <text class="rule" x="1600" y="375">  · Train Key: cabinet must be open</text>
-  <text class="rule" x="1600" y="402"> </text>
-  <text class="rule" x="1600" y="429">USE FUSE — at the Control Panel (F3-R4)</text>
-  <text class="rule" x="1600" y="456">USE MEDKIT — at the passenger (F4-R1)</text>
-  <text class="rule" x="1600" y="483">USE CAT_CARRIER — at the cat (F3-R3)</text>
-  <text class="rule" x="1600" y="510"> </text>
-  <text class="rule" x="1600" y="537">UNLOCK CABINET 427 — needs clues 4 + 2 + 7</text>
-  <text class="rule" x="1600" y="564"> </text>
-  <text class="rule" x="1600" y="591">BOARD — at F5-R2 with Train Key, installed</text>
-  <text class="rule" x="1600" y="618">Fuse, rescued passenger and secured cat</text>
-  <text class="rule" x="1600" y="672" fill="#5b6b7b">Score: 520 max · mission +100,</text>
-  <text class="rule" x="1600" y="699" fill="#5b6b7b">full-clear bonus +100</text>
 </svg>

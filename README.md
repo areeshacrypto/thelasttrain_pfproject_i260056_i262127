@@ -148,7 +148,7 @@ git push origin main --tags
 The fork is already named `PF-Project-TheLastTrain-i260056-i262127` after the two
 roll numbers, so the tag carries both (`v1.0.i260056-i262127`); if your marker
 expects a single number, use `v1.0.i260056` instead. Keep the directory layout
-(`include`, `src/core`, `data`, `out`, `docs`). `docs/` still needs
-`Project_Diagram.jpg`, `Flowchart.png` and `ConsoleUI.png` - take the console one
-with a terminal screenshot of `./last_train` and draw the other two from the
-architecture table above.
+(`include`, `src/core`, `data`, `out`, `docs`). `docs/Flowchart.png` is generated
+from `docs/flowchart.svg`; `docs/` still needs `Project_Diagram.jpg` and
+`ConsoleUI.png` - take the console one with a terminal screenshot of `./last_train`
+and draw the diagram from the architecture table above.

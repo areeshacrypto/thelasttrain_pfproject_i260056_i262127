@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1400" viewBox="0 0 2200 1400">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#33475b"/>
+    </marker>
+    <style>
+      .proc   { fill:#eef4fd; stroke:#2f5d9e; stroke-width:2; }
+      .term   { fill:#e8f5e9; stroke:#2e7d32; stroke-width:2; }
+      .fail   { fill:#fdecea; stroke:#c0392b; stroke-width:2; }
+      .wait   { fill:#fff8e1; stroke:#b8860b; stroke-width:2; }
+      .dec    { fill:#fff4d6; stroke:#b8860b; stroke-width:2; }
+      .t      { font-family:"Segoe UI",Arial,sans-serif; font-size:16px; fill:#1c2b3a; text-anchor:middle; }
+      .ts     { font-family:"Segoe UI",Arial,sans-serif; font-size:14px; fill:#1c2b3a; text-anchor:middle; }
+      .tb     { font-family:"Segoe UI",Arial,sans-serif; font-size:17px; font-weight:bold; fill:#1c2b3a; text-anchor:middle; }
+      .ln     { stroke:#33475b; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      .lbl    { font-family:"Segoe UI",Arial,sans-serif; font-size:13px; fill:#5b6b7b; }
+      .rule   { font-family:"Segoe UI",Arial,sans-serif; font-size:14px; fill:#33475b; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="2200" height="1400" fill="#ffffff"/>
+  <text x="60" y="54" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="bold" fill="#1c2b3a">The Last Train — Program Flowchart</text>
+  <text x="60" y="84" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#5b6b7b">Deterministic C++17 console game · main_core → simulator → switches → physics → logger</text>
+
+  <!-- main column -->
+  <rect class="term" x="420" y="110" width="200" height="50" rx="25"/>
+  <text class="tb" x="520" y="142">START</text>
+
+  <rect class="proc" x="300" y="190" width="440" height="56" rx="8"/>
+  <text class="t" x="520" y="224">loadBuildingMap(./data/building.txt)</text>
+
+  <polygon class="dec" points="520,270 670,315 520,360 370,315"/>
+  <text class="t" x="520" y="311">Map file</text>
+  <text class="t" x="520" y="332">valid?</text>
+
+  <rect class="proc" x="300" y="390" width="440" height="62" rx="8"/>
+  <text class="ts" x="520" y="415">Load ./data/initial-state.txt</text>
+  <text class="ts" x="520" y="437">(or ./out/savegame.txt with --load)</text>
+
+  <rect class="proc" x="300" y="480" width="440" height="54" rx="8"/>
+  <text class="ts" x="520" y="513">Print banner, status and room description</text>
+
+  <rect class="proc" x="300" y="562" width="440" height="54" rx="8"/>
+  <text class="ts" x="520" y="595">Read next command line (skip blanks and #)</text>
+
+  <polygon class="dec" points="520,644 660,690 520,736 380,690"/>
+  <text class="t" x="520" y="685">EOF or</text>
+  <text class="t" x="520" y="706">QUIT?</text>
+
+  <rect class="proc" x="290" y="766" width="460" height="64" rx="8"/>
+  <text class="ts" x="520" y="790">Dispatch: MOVE / INSPECT / COLLECT / USE / UNLOCK /</text>
+  <text class="ts" x="520" y="812">BOARD / SAVE / LOAD / LOOK / MAP / HELP</text>
+
+  <polygon class="dec" points="520,858 690,910 520,962 350,910"/>
+  <text class="t" x="520" y="904">Action</text>
+  <text class="t" x="520" y="925">valid?</text>
+
+  <rect class="proc" x="290" y="992" width="460" height="64" rx="8"/>
+  <text class="ts" x="520" y="1016">Apply cost (−Energy / −Time) and update</text>
+  <text class="ts" x="520" y="1038">inventory, score and objective flags</text>
+
+  <polygon class="dec" points="520,1084 700,1136 520,1188 340,1136"/>
+  <text class="t" x="520" y="1130">Energy ≤ 0 or</text>
+  <text class="t" x="520" y="1151">Time ≤ 0?</text>
+
+  <polygon class="dec" points="520,1216 690,1268 520,1320 350,1268"/>
+  <text class="t" x="520" y="1262">Boarded</text>
+  <text class="t" x="520" y="1283">train?</text>
+
+  <!-- main flow arrows -->
+  <path class="ln" d="M520,160 L520,188"/>
+  <path class="ln" d="M520,246 L520,268"/>
+  <text class="lbl" x="534" y="262">Yes</text>
+  <path class="ln" d="M520,360 L520,388"/>
+  <path class="ln" d="M520,452 L520,478"/>
+  <path class="ln" d="M520,534 L520,560"/>
+  <path class="ln" d="M520,616 L520,642"/>
+  <text class="lbl" x="534" y="634">No</text>
+  <path class="ln" d="M520,736 L520,764"/>
+  <path class="ln" d="M520,830 L520,856"/>
+  <path class="ln" d="M520,962 L520,990"/>
+  <text class="lbl" x="534" y="982">Yes</text>
+  <path class="ln" d="M520,1056 L520,1082"/>
+  <path class="ln" d="M520,1188 L520,1214"/>
+  <text class="lbl" x="534" y="1208">No</text>
+
+  <!-- map error branch -->
+  <path class="ln" d="M670,315 L1078,315"/>
+  <text class="lbl" x="700" y="305">No</text>
+  <rect class="fail" x="1080" y="283" width="380" height="64" rx="8"/>
+  <text class="tb" x="1270" y="309">Print error</text>
+  <text class="ts" x="1270" y="331">return 2</text>
+
+  <!-- EOF branch -->
+  <path class="ln" d="M660,690 L1078,690"/>
+  <text class="lbl" x="690" y="680">Yes</text>
+  <rect class="wait" x="1080" y="658" width="380" height="64" rx="8"/>
+  <text class="tb" x="1270" y="684">Write summary</text>
+  <text class="ts" x="1270" y="706">return 2 (incomplete session)</text>
+
+  <!-- invalid action branch and loop back -->
+  <path class="ln" d="M690,910 L1078,910"/>
+  <text class="lbl" x="720" y="900">No</text>
+  <rect class="wait" x="1080" y="878" width="380" height="64" rx="8"/>
+  <text class="tb" x="1270" y="904">Print reason</text>
+  <text class="ts" x="1270" y="926">no cost, stay in room</text>
+  <path class="ln" d="M1460,910 L1540,910 L1540,624 L742,624"/>
+  <text class="lbl" x="1548" y="770">retry</text>
+
+  <!-- defeat branch -->
+  <path class="ln" d="M700,1136 L1078,1136"/>
+  <text class="lbl" x="722" y="1126">Yes</text>
+  <rect class="fail" x="1080" y="1104" width="380" height="64" rx="8"/>
+  <text class="tb" x="1270" y="1130">DEFEAT</text>
+  <text class="ts" x="1270" y="1152">write summary · return 1</text>
+
+  <!-- victory branch -->
+  <path class="ln" d="M690,1268 L1078,1268"/>
+  <text class="lbl" x="722" y="1258">Yes</text>
+  <rect class="term" x="1080" y="1236" width="380" height="64" rx="8"/>
+  <text class="tb" x="1270" y="1262">VICTORY</text>
+  <text class="ts" x="1270" y="1284">write summary · return 0</text>
+
+  <!-- continue loop -->
+  <path class="ln" d="M350,1268 L240,1268 L240,624 L298,624"/>
+  <text class="lbl" x="52" y="1262">No — keep playing</text>
+
+  <!-- validation rules panel -->
+  <rect x="1580" y="110" width="560" height="640" rx="10" fill="#fbfcff" stroke="#9fb4d6" stroke-width="2"/>
+  <text x="1600" y="148" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="bold" fill="#1c2b3a">Checks inside “Action valid?”</text>
+  <text class="rule" x="1600" y="186">MOVE — adjacent link must exist (not a WALL)</text>
+  <text class="rule" x="1600" y="213">  · LOCKED door: requires Master Key</text>
+  <text class="rule" x="1600" y="240">  · Lift 2: Access Card (3 trips), then Lift Pass</text>
+  <text class="rule" x="1600" y="267"> </text>
+  <text class="rule" x="1600" y="294">COLLECT — item must be in this room</text>
+  <text class="rule" x="1600" y="321">  · Cat / Passenger: use Cat Carrier / Medkit</text>
+  <text class="rule" x="1600" y="348">  · Cabinet and Train Key are fixed objects</text>
+  <text class="rule" x="1600" y="375">  · Train Key: cabinet must be open</text>
+  <text class="rule" x="1600" y="402"> </text>
+  <text class="rule" x="1600" y="429">USE FUSE — at the Control Panel (F3-R4)</text>
+  <text class="rule" x="1600" y="456">USE MEDKIT — at the passenger (F4-R1)</text>
+  <text class="rule" x="1600" y="483">USE CAT_CARRIER — at the cat (F3-R3)</text>
+  <text class="rule" x="1600" y="510"> </text>
+  <text class="rule" x="1600" y="537">UNLOCK CABINET 427 — needs clues 4 + 2 + 7</text>
+  <text class="rule" x="1600" y="564"> </text>
+  <text class="rule" x="1600" y="591">BOARD — at F5-R2 with Train Key, installed</text>
+  <text class="rule" x="1600" y="618">Fuse, rescued passenger and secured cat</text>
+  <text class="rule" x="1600" y="672" fill="#5b6b7b">Score: 520 max · mission +100,</text>
+  <text class="rule" x="1600" y="699" fill="#5b6b7b">full-clear bonus +100</text>
+</svg>

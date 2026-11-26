@@ -20,11 +20,11 @@ static void setMessage(char* out, int cap, const char* text) {
 }
 
 static void appendCostTag(char* out, int cap, Cost cost) {
-    util::appendStr(out, cap, " [-");
+    util::appendStr(out, cap, "  (cost: ");
     util::appendInt(out, cap, cost.energy);
-    util::appendStr(out, cap, "E, -");
+    util::appendStr(out, cap, " energy, ");
     util::appendInt(out, cap, cost.time);
-    util::appendStr(out, cap, "T]");
+    util::appendStr(out, cap, " time)");
 }
 
 static int roomOfItem(const BuildingMap* map, ItemId id) {
@@ -34,11 +34,11 @@ static int roomOfItem(const BuildingMap* map, ItemId id) {
 
 static bool useFuse(GameState* state, const BuildingMap* map, char* out, int cap) {
     if (state->fuseInstalled) {
-        setMessage(out, cap, "The Fuse is already installed in the Control Panel.");
+        setMessage(out, cap, "The Fuse is already sitting in the Control Panel.");
         return false;
     }
     if (!hasItem(state, IT_FUSE)) {
-        setMessage(out, cap, "You do not have the Fuse.");
+        setMessage(out, cap, "You do not have the Fuse with you.");
         return false;
     }
     int panelRoom = roomOfItem(map, IT_PANEL);
@@ -54,9 +54,9 @@ static bool useFuse(GameState* state, const BuildingMap* map, char* out, int cap
     state->fuseInstalled = true;
     state->score += cfg::kScoreFuse;
 
-    setMessage(out, cap, "Fuse installed in the Control Panel: +");
+    setMessage(out, cap, "You fit the Fuse into the Control Panel. +");
     util::appendInt(out, cap, cfg::kScoreFuse);
-    util::appendStr(out, cap, " points. Lift 2 needs the Lift Pass to run normally.");
+    util::appendStr(out, cap, " points. Lift 2 still needs the Lift Pass.");
     appendCostTag(out, cap, cost);
     resolveDefeat(state);
     return true;
@@ -84,7 +84,7 @@ static bool useMedkit(GameState* state, const BuildingMap* map, char* out, int c
     state->passengerRescued = true;
     state->score += cfg::kScorePassenger;
 
-    setMessage(out, cap, "The passenger is treated and can move: +");
+    setMessage(out, cap, "You treat the passenger's wounds - they can walk now. +");
     util::appendInt(out, cap, cfg::kScorePassenger);
     util::appendStr(out, cap, " points.");
     appendCostTag(out, cap, cost);
@@ -114,7 +114,7 @@ static bool useCatCarrier(GameState* state, const BuildingMap* map, char* out, i
     state->catSecured = true;
     state->score += cfg::kScoreCat;
 
-    setMessage(out, cap, "The cat is secured in the carrier: +");
+    setMessage(out, cap, "You coax the cat into the carrier. +");
     util::appendInt(out, cap, cfg::kScoreCat);
     util::appendStr(out, cap, " points.");
     appendCostTag(out, cap, cost);
@@ -154,9 +154,9 @@ static bool unlockCabinet(GameState* state, const BuildingMap* map, int code, ch
     state->cabinetUnlocked = true;
     state->score += cfg::kScoreCabinet;
 
-    setMessage(out, cap, "The cabinet clicks open: +");
+    setMessage(out, cap, "The cabinet clicks open. +");
     util::appendInt(out, cap, cfg::kScoreCabinet);
-    util::appendStr(out, cap, " points. A Train Key (^) is inside.");
+    util::appendStr(out, cap, " points - a Train Key (^) is inside.");
     appendCostTag(out, cap, cost);
     resolveDefeat(state);
     return true;
@@ -206,11 +206,11 @@ static bool boardTrain(GameState* state, const BuildingMap* map, char* out, int 
     state->victory = true;
     state->over = true;
 
-    setMessage(out, cap, "You board the train with the passenger and the cat: +");
+    setMessage(out, cap, "You board the last train with the passenger and the cat. +");
     util::appendInt(out, cap, cfg::kScoreTrain);
     util::appendStr(out, cap, " points.");
     if (full) {
-        util::appendStr(out, cap, " Full mission bonus: +100 points.");
+        util::appendStr(out, cap, " Perfect run - every objective done: +100 bonus.");
     }
     util::appendStr(out, cap, " Final score ");
     util::appendInt(out, cap, state->score);
@@ -286,17 +286,40 @@ bool switches::tryTraverse(GameState* state, const BuildingMap* map, int targetR
     state->turn++;
 
     const Room& room = map->rooms[targetRoom];
-    setMessage(out, cap, "You move to ");
-    util::appendStr(out, cap, room.id);
-    util::appendStr(out, cap, " (");
+    switch (type) {
+        case LINK_DOOR:
+            setMessage(out, cap, "You step through the door into ");
+            break;
+        case LINK_WINDOW:
+            setMessage(out, cap, "You climb through the window into ");
+            break;
+        case LINK_STAIR:
+            setMessage(out, cap, room.floorIdx > map->rooms[from].floorIdx
+                                     ? "You take the stairs up to "
+                                     : "You take the stairs down to ");
+            break;
+        case LINK_LOCKED:
+            setMessage(out, cap, "You unlock the door with the Master Key and step into ");
+            break;
+        case LINK_LIFT1:
+            setMessage(out, cap, "You ride lift 1 to ");
+            break;
+        case LINK_LIFT2:
+            setMessage(out, cap, emergency ? "You ride lift 2 on an emergency trip to "
+                                           : "You ride lift 2 to ");
+            break;
+        default:
+            setMessage(out, cap, "You make your way to ");
+            break;
+    }
     util::appendStr(out, cap, room.name);
-    util::appendStr(out, cap, ") via ");
-    util::appendStr(out, cap, linkTypeName(type));
-    util::appendStr(out, cap, ".");
+    util::appendStr(out, cap, " (");
+    util::appendStr(out, cap, room.id);
+    util::appendStr(out, cap, ").");
     if (emergency) {
-        util::appendStr(out, cap, " Emergency trip used, ");
+        util::appendStr(out, cap, " Emergency trips left: ");
         util::appendInt(out, cap, state->emergencyTrips);
-        util::appendStr(out, cap, " left.");
+        util::appendStr(out, cap, ".");
     }
     appendCostTag(out, cap, cost);
     resolveDefeat(state);
@@ -358,7 +381,7 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
         case IT_ENERGY_PACK_B:
             addEnergy(state, def.value);
             clampResources(state);
-            setMessage(out, cap, "Energy Pack collected: +");
+            setMessage(out, cap, "You pocket an Energy Pack. +");
             util::appendInt(out, cap, def.value);
             util::appendStr(out, cap, " energy (");
             util::appendInt(out, cap, state->energy);
@@ -367,7 +390,7 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
         case IT_TOOLKIT:
             addEnergy(state, def.value);
             clampResources(state);
-            setMessage(out, cap, "Emergency Toolkit collected: +");
+            setMessage(out, cap, "You grab the Emergency Toolkit. +");
             util::appendInt(out, cap, def.value);
             util::appendStr(out, cap, " energy (");
             util::appendInt(out, cap, state->energy);
@@ -376,7 +399,7 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
         case IT_OBSERVATION_TOKEN:
             addTime(state, def.value);
             clampResources(state);
-            setMessage(out, cap, "Observation Token collected: +");
+            setMessage(out, cap, "You take the Observation Token. +");
             util::appendInt(out, cap, def.value);
             util::appendStr(out, cap, " time (");
             util::appendInt(out, cap, state->time);
@@ -384,9 +407,9 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
             break;
         case IT_MASTER_KEY:
             state->score += cfg::kScoreMasterKey;
-            setMessage(out, cap, "Master Key collected: +");
+            setMessage(out, cap, "You take the Master Key. +");
             util::appendInt(out, cap, cfg::kScoreMasterKey);
-            util::appendStr(out, cap, " points. It opens the locked door on floor 3.");
+            util::appendStr(out, cap, " points - it opens the locked door on floor 3.");
             break;
         case IT_CLUE_FOUR:
         case IT_CLUE_TWO:
@@ -398,9 +421,9 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
             state->score += cfg::kScoreClue;
             char code[16];
             formatClueCode(state, code, sizeof(code));
-            setMessage(out, cap, "Clue digit ");
+            setMessage(out, cap, "You read clue digit ");
             util::appendInt(out, cap, def.value);
-            util::appendStr(out, cap, " found: +");
+            util::appendStr(out, cap, ". +");
             util::appendInt(out, cap, cfg::kScoreClue);
             util::appendStr(out, cap, " points. Code so far: ");
             util::appendStr(out, cap, code);
@@ -408,13 +431,13 @@ bool switches::tryCollect(GameState* state, const BuildingMap* map, const char* 
         }
         case IT_LIFT_PASS:
             state->score += cfg::kScoreLiftPass;
-            setMessage(out, cap, "Lift Pass collected: +");
+            setMessage(out, cap, "You take the Lift Pass. +");
             util::appendInt(out, cap, cfg::kScoreLiftPass);
-            util::appendStr(out, cap, " points. Lift 2 runs normally once the Fuse is installed.");
+            util::appendStr(out, cap, " points - lift 2 runs normally once the Fuse is installed.");
             break;
         case IT_TRAIN_KEY:
             state->score += cfg::kScoreTrainKey;
-            setMessage(out, cap, "Train Key collected: +");
+            setMessage(out, cap, "You take the Train Key. +");
             util::appendInt(out, cap, cfg::kScoreTrainKey);
             util::appendStr(out, cap, " points.");
             break;

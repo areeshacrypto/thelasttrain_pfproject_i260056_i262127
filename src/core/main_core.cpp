@@ -29,8 +29,10 @@ int main(int argc, char** argv) {
     }
 
     viewer::printBanner();
-    cout << "Goal: rescue the passenger and the cat, then board the train at F5-R2.\n";
-    cout << "Maximum score: " << cfg::kMaxScore << " points. Type HELP inside the game.\n";
+    cout << "Your job: rescue the injured passenger and the cat, then board the last\n";
+    cout << "train at F5-R2. Every action costs energy and time - both start at 100,\n";
+    cout << "and if either one reaches 0 the night is over. Maximum score: "
+         << cfg::kMaxScore << " points.\n";
 
     BuildingMap map;
     char error[256];

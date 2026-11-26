@@ -9,6 +9,8 @@
 
 using namespace std;
 
+static const int kExitColumn = 30;
+
 static void makeBar(int value, char* out) {
     if (value < 0) value = 0;
     if (value > cfg::kResourceCap) value = cfg::kResourceCap;
@@ -33,6 +35,15 @@ static void appendItem(char* buffer, int cap, const char* text) {
     util::appendStr(buffer, cap, text);
 }
 
+static void appendItemLabel(char* buffer, int cap, const ItemDef& def) {
+    char label[96] = "";
+    util::appendStr(label, (int)sizeof(label), def.name);
+    util::appendStr(label, (int)sizeof(label), " (");
+    util::appendChar(label, (int)sizeof(label), def.symbol);
+    util::appendStr(label, (int)sizeof(label), ")");
+    appendItem(buffer, cap, label);
+}
+
 static int roomAtGrid(const BuildingMap* map, int row, int col) {
     if (row < 0 || row >= cfg::kFloors || col < 0 || col >= cfg::kRoomsPerFloor) {
         return -1;
@@ -40,9 +51,47 @@ static int roomAtGrid(const BuildingMap* map, int row, int col) {
     return map->roomGrid[row][col];
 }
 
+static void exitPhrase(const BuildingMap* map, const GameState* state, LinkType type,
+                       int from, int to, char* out, int cap) {
+    const Room& target = map->rooms[to];
+    switch (type) {
+        case LINK_DOOR:
+            util::copyText(out, cap, "through a door");
+            break;
+        case LINK_WINDOW:
+            util::copyText(out, cap, "through a window");
+            break;
+        case LINK_STAIR:
+            util::copyText(out, cap, target.floorIdx > map->rooms[from].floorIdx
+                                             ? "up the stairs"
+                                             : "down the stairs");
+            break;
+        case LINK_LOCKED:
+            util::copyText(out, cap, hasItem(state, IT_MASTER_KEY)
+                                             ? "through the locked door"
+                                             : "locked - needs the Master Key");
+            break;
+        case LINK_LIFT1:
+            util::copyText(out, cap, "by lift 1");
+            break;
+        case LINK_LIFT2:
+            util::copyText(out, cap, (state->fuseInstalled && hasItem(state, IT_LIFT_PASS))
+                                             ? "by lift 2"
+                                             : "lift 2 - no power");
+            break;
+        case LINK_WALL:
+            util::copyText(out, cap, "blocked by a solid wall");
+            break;
+        default:
+            util::copyText(out, cap, "no way through");
+            break;
+    }
+}
+
 void viewer::printBanner() {
     cout << "\n==============================================================\n";
-    cout << "  THE LAST TRAIN  -  deterministic rescue simulation (C++17)\n";
+    cout << "  THE LAST TRAIN\n";
+    cout << "  A five-floor rescue on the last night of service.\n";
     cout << "==============================================================\n";
 }
 
@@ -61,7 +110,7 @@ void viewer::printStatus(const BuildingMap* map, const GameState* state) {
         appendItem(inventory, (int)sizeof(inventory), def.name);
     }
     if (inventory[0] == '\0') {
-        util::copyText(inventory, (int)sizeof(inventory), "(empty)");
+        util::copyText(inventory, (int)sizeof(inventory), "nothing yet");
     }
 
     char visible[256] = "";
@@ -69,38 +118,52 @@ void viewer::printStatus(const BuildingMap* map, const GameState* state) {
         const ItemDef& def = map->items[i];
         if (def.room != state->room || state->itemTaken[def.itemId]) continue;
         if (def.itemId == IT_TRAIN_KEY && !state->cabinetUnlocked) continue;
-
-        char entry[64] = "";
-        util::appendChar(entry, (int)sizeof(entry), def.symbol);
-        util::appendChar(entry, (int)sizeof(entry), ' ');
-        util::appendStr(entry, (int)sizeof(entry), def.name);
-        appendItem(visible, (int)sizeof(visible), entry);
+        appendItemLabel(visible, (int)sizeof(visible), def);
     }
     if (visible[0] == '\0') {
-        util::copyText(visible, (int)sizeof(visible), "(nothing useful)");
+        util::copyText(visible, (int)sizeof(visible), "nothing you can pick up");
     }
 
     char clues[16];
     formatClueCode(state, clues, (int)sizeof(clues));
 
-    char exits[512];
-    buildExitList(map, state->room, exits, (int)sizeof(exits));
-
     cout << "\n";
-    cout << " Location : " << room.id << "  " << room.name << "\n";
-    cout << " Energy   : [" << energyBar << "] " << setw(3) << state->energy << "/" << cfg::kResourceCap
-         << "    Score : " << setw(3) << state->score << "/" << cfg::kMaxScore << "\n";
-    cout << " Time     : [" << timeBar << "] " << setw(3) << state->time << "/" << cfg::kResourceCap
-         << "    Turn  : " << state->turn << "\n";
-    cout << " Inventory: " << inventory << "\n";
-    cout << " Clues    : " << clues << "    Cabinet: " << (state->cabinetUnlocked ? "unlocked" : "locked") << "\n";
-    cout << " You see  : " << visible << "\n";
-    cout << " " << exits << "\n";
+    cout << " You are here: " << room.name << " (" << room.id << ")\n\n";
+    cout << "   Energy  [" << energyBar << "] " << setw(3) << state->energy << "/" << cfg::kResourceCap
+         << "      Score  " << state->score << "/" << cfg::kMaxScore << "\n";
+    cout << "   Time    [" << timeBar << "] " << setw(3) << state->time << "/" << cfg::kResourceCap
+         << "      Turn   " << state->turn << "\n\n";
+    cout << "   Carrying : " << inventory << "\n";
+    cout << "   Clues    : " << clues << "      Cabinet: "
+         << (state->cabinetUnlocked ? "open" : "locked") << "\n";
+    cout << "   You see  : " << visible << "\n";
+    cout << "   To go    :\n";
+
+    bool anyExit = false;
+    for (int i = 0; i < map->linkCount; i++) {
+        const Link& link = map->links[i];
+        int to = -1;
+        if (link.a == state->room) {
+            to = link.b;
+        } else if (link.b == state->room) {
+            to = link.a;
+        } else {
+            continue;
+        }
+        char phrase[96];
+        exitPhrase(map, state, link.type, state->room, to, phrase, (int)sizeof(phrase));
+        cout << "     " << left << setw(kExitColumn) << phrase << right
+             << " -> " << map->rooms[to].name << " (" << map->rooms[to].id << ")\n";
+        anyExit = true;
+    }
+    if (!anyExit) {
+        cout << "     nowhere - this room is sealed\n";
+    }
     cout << "\n";
 }
 
 void viewer::printMapOverview(const BuildingMap* map, const GameState* state) {
-    cout << "\n Building map (* = you):\n";
+    cout << "\n The building (F1 is the ground floor, F5 the top; * = you):\n";
     for (int row = 0; row < cfg::kFloors; row++) {
         cout << "  F" << (row + 1) << " |";
         for (int col = 0; col < cfg::kRoomsPerFloor; col++) {
@@ -114,33 +177,40 @@ void viewer::printMapOverview(const BuildingMap* map, const GameState* state) {
         }
         cout << "\n";
     }
-    cout << "  Doors/staircases/lifts: use MOVE with an adjacent room id.\n";
+    cout << "  Type MOVE <room id> to walk to a room next to yours.\n";
 }
 
 void viewer::printHelp() {
-    cout << "\nCOMMANDS\n"
-         << "  LOOK                  describe the current room and status\n"
-         << "  MAP                   show the building overview\n"
-         << "  MOVE <room>           move to an adjacent room (e.g. MOVE F3-R2)\n"
-         << "  INSPECT               search the current room          [-1E, -1T]\n"
-         << "  COLLECT <item>        take an item by id, name or symbol [-1E, -1T]\n"
-         << "  USE FUSE              install the Fuse at the panel    [-1E, -1T]\n"
-         << "  USE MEDKIT            treat the injured passenger      [-1E, -1T]\n"
-         << "  USE CAT_CARRIER       secure the cat in F3-R3          [-1E, -1T]\n"
-         << "  UNLOCK CABINET <code> open the security cabinet        [-1E, -1T]\n"
-         << "  BOARD                 board the train at F5-R2         [-1E, -1T]\n"
-         << "  SAVE / LOAD           write or read out/savegame.txt\n"
-         << "  STATUS / HELP / QUIT\n"
-         << "\nMOVEMENT COSTS: door/stair -2E,-1T | window -3E,-2T | lift -4E,-3T\n";
+    cout << "\nHOW TO PLAY\n"
+         << "  LOOK / L              look around and show your status\n"
+         << "  MAP                   show the five floors\n"
+         << "  MOVE <room id>        walk to a room next to yours (e.g. MOVE F3-R2)\n"
+         << "  INSPECT / SEARCH      search the room             1 energy, 1 time\n"
+         << "  COLLECT <item>        pick something up           1 energy, 1 time\n"
+         << "  USE FUSE              fit the Fuse into the panel 1 energy, 1 time\n"
+         << "  USE MEDKIT            treat the injured passenger 1 energy, 1 time\n"
+         << "  USE CAT_CARRIER       put the cat in the carrier  1 energy, 1 time\n"
+         << "  UNLOCK CABINET 427    open the security cabinet   1 energy, 1 time\n"
+         << "  BOARD                 get on the train at F5-R2   1 energy, 1 time\n"
+         << "  SAVE / LOAD           keep or restore out/savegame.txt\n"
+         << "  QUIT                  leave the building\n"
+         << "\nWalking costs: door or stairs 2 energy/1 time, window 3/2, lift 4/3.\n"
+         << "Energy and time both start at 100. If either reaches 0, you lose.\n";
 }
 
 void viewer::printResult(const BuildingMap* map, const GameState* state) {
     (void)map;
     cout << "\n==============================================================\n";
-    cout << " RESULT : " << (state->victory ? "VICTORY" : "DEFEAT") << "\n";
-    cout << " Score  : " << state->score << "/" << cfg::kMaxScore
-         << "   Energy: " << state->energy << "/" << cfg::kResourceCap
-         << "   Time: " << state->time << "/" << cfg::kResourceCap << "\n";
-    cout << " Turns  : " << state->turn << "\n";
+    if (state->victory) {
+        cout << "  VICTORY - you made the last train.\n";
+    } else if (state->energy <= 0) {
+        cout << "  DEFEAT - you ran out of energy.\n";
+    } else {
+        cout << "  DEFEAT - you ran out of time.\n";
+    }
+    cout << "  Score " << state->score << "/" << cfg::kMaxScore
+         << "    Energy " << state->energy << "/" << cfg::kResourceCap
+         << "    Time " << state->time << "/" << cfg::kResourceCap
+         << "    Turns " << state->turn << "\n";
     cout << "==============================================================\n";
 }

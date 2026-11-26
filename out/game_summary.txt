@@ -9,7 +9,7 @@ Final score  : 520 / 520
 Cabinet code : 4 2 7 (unlocked)
 
 OBJECTIVE CHECKLIST
--------------------
+
 [x] Master Key collected                         +10
 [x] Clue digit 4 found                           +10
 [x] Clue digit 2 found                           +10
@@ -24,7 +24,7 @@ OBJECTIVE CHECKLIST
 [x] Full mission victory bonus                   +100
 
 AUDIT TRAIL
------------
+
 01. Turn 1: You move to F1-R2 (Reception) via window. [-3E, -2T]
 02. Turn 2: Master Key collected: +10 points. It opens the locked door on floor 3. [-1E, -1T]
 03. Turn 3: You move to F1-R1 (Entrance Lobby) via window. [-3E, -2T]

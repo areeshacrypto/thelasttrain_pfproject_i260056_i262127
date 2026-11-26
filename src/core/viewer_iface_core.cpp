@@ -86,7 +86,7 @@ void viewer::printStatus(const BuildingMap* map, const GameState* state) {
     char exits[512];
     buildExitList(map, state->room, exits, (int)sizeof(exits));
 
-    cout << "\n--------------------------------------------------------------\n";
+    cout << "\n";
     cout << " Location : " << room.id << "  " << room.name << "\n";
     cout << " Energy   : [" << energyBar << "] " << setw(3) << state->energy << "/" << cfg::kResourceCap
          << "    Score : " << setw(3) << state->score << "/" << cfg::kMaxScore << "\n";
@@ -96,7 +96,7 @@ void viewer::printStatus(const BuildingMap* map, const GameState* state) {
     cout << " Clues    : " << clues << "    Cabinet: " << (state->cabinetUnlocked ? "unlocked" : "locked") << "\n";
     cout << " You see  : " << visible << "\n";
     cout << " " << exits << "\n";
-    cout << "--------------------------------------------------------------\n";
+    cout << "\n";
 }
 
 void viewer::printMapOverview(const BuildingMap* map, const GameState* state) {

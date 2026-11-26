@@ -264,8 +264,7 @@ bool logger::writeGameSummaryReport(const GameState* state, const BuildingMap* m
     file << "Final score  : " << state->score << " / " << cfg::kMaxScore << "\n";
     file << "Cabinet code : " << clues << " (" << (state->cabinetUnlocked ? "unlocked" : "locked") << ")\n";
 
-    file << "\nOBJECTIVE CHECKLIST\n";
-    file << "-------------------\n";
+    file << "\nOBJECTIVE CHECKLIST\n\n";
     writeObjective(file, state->itemTaken[IT_MASTER_KEY], "Master Key collected", cfg::kScoreMasterKey);
     writeObjective(file, state->clueFour, "Clue digit 4 found", cfg::kScoreClue);
     writeObjective(file, state->clueTwo, "Clue digit 2 found", cfg::kScoreClue);
@@ -279,8 +278,7 @@ bool logger::writeGameSummaryReport(const GameState* state, const BuildingMap* m
     writeObjective(file, state->trainBoarded, "Train prepared and boarded", cfg::kScoreTrain);
     writeObjective(file, state->victory, "Full mission victory bonus", cfg::kScoreVictoryBonus);
 
-    file << "\nAUDIT TRAIL\n";
-    file << "-----------\n";
+    file << "\nAUDIT TRAIL\n\n";
     if (g_auditCount == 0) {
         file << "(no actions recorded)\n";
     }

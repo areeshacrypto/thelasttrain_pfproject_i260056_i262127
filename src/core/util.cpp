@@ -1,13 +1,10 @@
 #include "util.h"
 #include <cctype>
 #include <cstring>
-
 using namespace std;
-
 static bool isSpaceChar(char c) {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
-
 static char toLowerChar(char c) {
     if (c >= 'A' && c <= 'Z') {
         return (char)(c - 'A' + 'a');

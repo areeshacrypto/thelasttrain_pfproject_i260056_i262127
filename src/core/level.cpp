@@ -5,30 +5,46 @@
 
 using namespace std;
 
-struct ItemToken {
-    const char* token;
-    ItemId id;
+static const char* const kItemTokens[] = {
+    "MASTER_KEY",
+    "ENERGY_PACK_A",
+    "ENERGY_PACK_B",
+    "TOOLKIT",
+    "CLUE_FOUR",
+    "FUSE",
+    "CAT",
+    "PANEL",
+    "LIFT_PASS",
+    "PASSENGER",
+    "MEDKIT",
+    "ACCESS_CARD",
+    "CLUE_TWO",
+    "CLUE_SEVEN",
+    "CABINET",
+    "TRAIN_KEY",
+    "CAT_CARRIER",
+    "OBSERVATION_TOKEN",
 };
 
-static const ItemToken kItemTokens[] = {
-    {"MASTER_KEY", IT_MASTER_KEY},
-    {"ENERGY_PACK_A", IT_ENERGY_PACK_A},
-    {"ENERGY_PACK_B", IT_ENERGY_PACK_B},
-    {"TOOLKIT", IT_TOOLKIT},
-    {"CLUE_FOUR", IT_CLUE_FOUR},
-    {"FUSE", IT_FUSE},
-    {"CAT", IT_CAT},
-    {"PANEL", IT_PANEL},
-    {"LIFT_PASS", IT_LIFT_PASS},
-    {"PASSENGER", IT_PASSENGER},
-    {"MEDKIT", IT_MEDKIT},
-    {"ACCESS_CARD", IT_ACCESS_CARD},
-    {"CLUE_TWO", IT_CLUE_TWO},
-    {"CLUE_SEVEN", IT_CLUE_SEVEN},
-    {"CABINET", IT_CABINET},
-    {"TRAIN_KEY", IT_TRAIN_KEY},
-    {"CAT_CARRIER", IT_CAT_CARRIER},
-    {"OBSERVATION_TOKEN", IT_OBSERVATION_TOKEN},
+static const ItemId kItemTokenIds[] = {
+    IT_MASTER_KEY,
+    IT_ENERGY_PACK_A,
+    IT_ENERGY_PACK_B,
+    IT_TOOLKIT,
+    IT_CLUE_FOUR,
+    IT_FUSE,
+    IT_CAT,
+    IT_PANEL,
+    IT_LIFT_PASS,
+    IT_PASSENGER,
+    IT_MEDKIT,
+    IT_ACCESS_CARD,
+    IT_CLUE_TWO,
+    IT_CLUE_SEVEN,
+    IT_CABINET,
+    IT_TRAIN_KEY,
+    IT_CAT_CARRIER,
+    IT_OBSERVATION_TOKEN,
 };
 
 static const int kItemTokenCount = (int)(sizeof(kItemTokens) / sizeof(kItemTokens[0]));
@@ -115,21 +131,30 @@ static bool parseIntAfter(const char* line, const char* keyword, int* value) {
 
 static bool itemIdFromToken(const char* text, ItemId* out) {
     for (int i = 0; i < kItemTokenCount; i++) {
-        if (util::equalsIgnoreCase(text, kItemTokens[i].token)) {
-            *out = kItemTokens[i].id;
+        if (util::equalsIgnoreCase(text, kItemTokens[i])) {
+            *out = kItemTokenIds[i];
             return true;
         }
     }
     return false;
 }
 
-static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int errorCap) {
+static bool parseBuildingFile(FILE* file,
+                              char roomId[][cfg::kIdLen], char roomName[][cfg::kNameLen],
+                              int roomFloor[], int roomSlot[], int roomGridRow[], int roomGridCol[],
+                              int* roomCount,
+                              int linkA[], int linkB[], LinkType linkType[], int* linkCount,
+                              char itemCode[][cfg::kItemIdLen], char itemSymbol[], char itemName[][cfg::kNameLen],
+                              int itemRoom[], ItemClass itemClass[], ItemId itemAs[], int itemValue[],
+                              int* itemCount,
+                              int grid[][cfg::kRoomsPerFloor],
+                              char* error, int errorCap) {
     char line[cfg::kMaxLineLen];
     char* fields[8];
 
     for (int row = 0; row < cfg::kFloors; row++) {
         for (int col = 0; col < cfg::kRoomsPerFloor; col++) {
-            map->roomGrid[row][col] = -1;
+            grid[row][col] = -1;
         }
     }
 
@@ -158,27 +183,31 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
             setError(error, errorCap, "building.txt: ROOM needs id|name");
             return false;
         }
-        Room room = {};
-        util::copyText(room.id, cfg::kIdLen, fields[0]);
-        util::trimInPlace(room.id);
-        util::copyText(room.name, cfg::kNameLen, fields[1]);
-        util::trimInPlace(room.name);
+        int idx = *roomCount;
+        util::copyText(roomId[idx], cfg::kIdLen, fields[0]);
+        util::trimInPlace(roomId[idx]);
+        util::copyText(roomName[idx], cfg::kNameLen, fields[1]);
+        util::trimInPlace(roomName[idx]);
 
-        if (!parseRoomId(room.id, &room.floorIdx, &room.roomIdx)) {
+        int floorIdx = 0;
+        int slotIdx = 0;
+        if (!parseRoomId(roomId[idx], &floorIdx, &slotIdx)) {
             setError(error, errorCap, "building.txt: invalid room id");
             return false;
         }
-        room.gridRow = -1;
-        room.gridCol = -1;
+        roomFloor[idx] = floorIdx;
+        roomSlot[idx] = slotIdx;
+        roomGridRow[idx] = -1;
+        roomGridCol[idx] = -1;
 
-        for (int r = 0; r < map->roomCount; r++) {
-            if (util::equalsIgnoreCase(map->rooms[r].id, room.id)) {
+        for (int r = 0; r < *roomCount; r++) {
+            if (util::equalsIgnoreCase(roomId[r], roomId[idx])) {
                 setError(error, errorCap, "building.txt: duplicate room id");
                 return false;
             }
         }
-        map->rooms[map->roomCount++] = room;
-        perFloor[room.floorIdx]++;
+        (*roomCount)++;
+        perFloor[floorIdx]++;
     }
 
     for (int f = 0; f < cfg::kFloors; f++) {
@@ -203,21 +232,21 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
             setError(error, errorCap, "building.txt: LINK needs a|b|type");
             return false;
         }
-        int a = findRoom(map, fields[0]);
-        int b = findRoom(map, fields[1]);
+        int a = findRoom(roomId, *roomCount, fields[0]);
+        int b = findRoom(roomId, *roomCount, fields[1]);
         LinkType type = LINK_NONE;
         if (a < 0 || b < 0 || a == b || !parseLinkType(fields[2], &type)) {
             setError(error, errorCap, "building.txt: invalid LINK entry");
             return false;
         }
-        if (map->linkCount >= cfg::kMaxLinks) {
+        if (*linkCount >= cfg::kMaxLinks) {
             setError(error, errorCap, "building.txt: too many links");
             return false;
         }
-        map->links[map->linkCount].a = a;
-        map->links[map->linkCount].b = b;
-        map->links[map->linkCount].type = type;
-        map->linkCount++;
+        linkA[*linkCount] = a;
+        linkB[*linkCount] = b;
+        linkType[*linkCount] = type;
+        (*linkCount)++;
     }
 
     int declaredItems = 0;
@@ -240,9 +269,13 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
             setError(error, errorCap, "building.txt: ITEM needs id|symbol|name|room|class|value");
             return false;
         }
-        ItemDef def = {};
-        util::copyText(def.id, cfg::kItemIdLen, fields[0]);
-        util::trimInPlace(def.id);
+        if (*itemCount >= cfg::kMaxItems) {
+            setError(error, errorCap, "building.txt: too many items");
+            return false;
+        }
+        int idx = *itemCount;
+        util::copyText(itemCode[idx], cfg::kItemIdLen, fields[0]);
+        util::trimInPlace(itemCode[idx]);
         util::trimInPlace(fields[1]);
         util::trimInPlace(fields[2]);
         util::trimInPlace(fields[3]);
@@ -253,31 +286,29 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
             setError(error, errorCap, "building.txt: item symbol must be 1 char");
             return false;
         }
-        def.symbol = fields[1][0];
-        util::copyText(def.name, cfg::kNameLen, fields[2]);
-        def.room = findRoom(map, fields[3]);
-        if (def.room < 0) {
+        itemSymbol[idx] = fields[1][0];
+        util::copyText(itemName[idx], cfg::kNameLen, fields[2]);
+        itemRoom[idx] = findRoom(roomId, *roomCount, fields[3]);
+        if (itemRoom[idx] < 0) {
             setError(error, errorCap, "building.txt: item room not found");
             return false;
         }
-        if (!parseItemClass(fields[4], &def.cls)) {
+        if (!parseItemClass(fields[4], &itemClass[idx])) {
             setError(error, errorCap, "building.txt: unknown item class");
             return false;
         }
-        if (!util::parseIntStrict(fields[5], &def.value)) {
+        if (!util::parseIntStrict(fields[5], &itemValue[idx])) {
             setError(error, errorCap, "building.txt: bad item value");
             return false;
         }
-        if (!itemIdFromToken(def.id, &def.itemId) || seenItem[def.itemId]) {
+        ItemId as = IT_COUNT;
+        if (!itemIdFromToken(itemCode[idx], &as) || seenItem[as]) {
             setError(error, errorCap, "building.txt: unknown or duplicate item id");
             return false;
         }
-        seenItem[def.itemId] = true;
-        if (map->itemCount >= cfg::kMaxItems) {
-            setError(error, errorCap, "building.txt: too many items");
-            return false;
-        }
-        map->items[map->itemCount++] = def;
+        seenItem[as] = true;
+        itemAs[idx] = as;
+        (*itemCount)++;
     }
 
     if (!nextDataLine(file, line, sizeof(line)) || strcmp(line, "GRID") != 0) {
@@ -294,18 +325,18 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
             return false;
         }
         for (int col = 0; col < cfg::kRoomsPerFloor; col++) {
-            int index = findRoom(map, fields[col]);
-            if (index < 0 || map->rooms[index].gridRow != -1) {
+            int index = findRoom(roomId, *roomCount, fields[col]);
+            if (index < 0 || roomGridRow[index] != -1) {
                 setError(error, errorCap, "building.txt: bad GRID cell");
                 return false;
             }
-            map->rooms[index].gridRow = row;
-            map->rooms[index].gridCol = col;
-            map->roomGrid[row][col] = index;
+            roomGridRow[index] = row;
+            roomGridCol[index] = col;
+            grid[row][col] = index;
         }
     }
-    for (int i = 0; i < map->roomCount; i++) {
-        if (map->rooms[i].gridRow < 0) {
+    for (int i = 0; i < *roomCount; i++) {
+        if (roomGridRow[i] < 0) {
             setError(error, errorCap, "building.txt: room missing from GRID");
             return false;
         }
@@ -313,8 +344,19 @@ static bool parseBuildingFile(FILE* file, BuildingMap* map, char* error, int err
     return true;
 }
 
-bool loadBuildingMap(const char* path, BuildingMap* map, char* error, int errorCap) {
-    *map = BuildingMap{};
+bool loadBuildingMap(const char* path,
+                     char roomId[][cfg::kIdLen], char roomName[][cfg::kNameLen],
+                     int roomFloor[], int roomSlot[], int roomGridRow[], int roomGridCol[],
+                     int* roomCount,
+                     int linkA[], int linkB[], LinkType linkType[], int* linkCount,
+                     char itemCode[][cfg::kItemIdLen], char itemSymbol[], char itemName[][cfg::kNameLen],
+                     int itemRoom[], ItemClass itemClass[], ItemId itemAs[], int itemValue[],
+                     int* itemCount,
+                     int grid[][cfg::kRoomsPerFloor],
+                     char* error, int errorCap) {
+    *roomCount = 0;
+    *linkCount = 0;
+    *itemCount = 0;
     if (error != nullptr && errorCap > 0) {
         error[0] = '\0';
     }
@@ -323,59 +365,68 @@ bool loadBuildingMap(const char* path, BuildingMap* map, char* error, int errorC
         setError(error, errorCap, "building.txt: cannot open file");
         return false;
     }
-    bool ok = parseBuildingFile(file, map, error, errorCap);
+    bool ok = parseBuildingFile(file,
+                                roomId, roomName, roomFloor, roomSlot, roomGridRow, roomGridCol,
+                                roomCount,
+                                linkA, linkB, linkType, linkCount,
+                                itemCode, itemSymbol, itemName, itemRoom, itemClass, itemAs, itemValue,
+                                itemCount,
+                                grid,
+                                error, errorCap);
     fclose(file);
     if (!ok) {
-        *map = BuildingMap{};
+        *roomCount = 0;
+        *linkCount = 0;
+        *itemCount = 0;
     }
     return ok;
 }
 
-int findRoom(const BuildingMap* map, const char* roomId) {
-    if (map == nullptr || roomId == nullptr) return -1;
-    for (int i = 0; i < map->roomCount; i++) {
-        if (util::equalsIgnoreCase(map->rooms[i].id, roomId)) {
+int findRoom(const char roomId[][cfg::kIdLen], int roomCount, const char* id) {
+    if (id == nullptr) return -1;
+    for (int i = 0; i < roomCount; i++) {
+        if (util::equalsIgnoreCase(roomId[i], id)) {
             return i;
         }
     }
     return -1;
 }
 
-bool validateStartingRoom(const BuildingMap* map, int roomIndex) {
-    return map != nullptr && roomIndex >= 0 && roomIndex < map->roomCount;
+bool validateStartingRoom(int roomCount, int roomIndex) {
+    return roomIndex >= 0 && roomIndex < roomCount;
 }
 
-LinkType findLink(const BuildingMap* map, int from, int to) {
-    for (int i = 0; i < map->linkCount; i++) {
-        const Link& link = map->links[i];
-        if ((link.a == from && link.b == to) || (link.b == from && link.a == to)) {
-            return link.type;
+LinkType findLink(const int linkA[], const int linkB[], const LinkType linkType[],
+                  int linkCount, int from, int to) {
+    for (int i = 0; i < linkCount; i++) {
+        if ((linkA[i] == from && linkB[i] == to) || (linkB[i] == from && linkA[i] == to)) {
+            return linkType[i];
         }
     }
     return LINK_NONE;
 }
 
-int findItemDef(const BuildingMap* map, const char* token) {
-    if (map == nullptr || token == nullptr) return -1;
+int findItemDef(const char itemCode[][cfg::kItemIdLen], const char itemName[][cfg::kNameLen],
+                const char itemSymbol[], int itemCount, const char* token) {
+    if (token == nullptr) return -1;
     bool singleSymbol = (strlen(token) == 1);
-    for (int i = 0; i < map->itemCount; i++) {
-        const ItemDef& def = map->items[i];
-        if (util::equalsIgnoreCase(def.id, token) ||
-            util::equalsIgnoreCase(def.name, token) ||
-            (singleSymbol && def.symbol == token[0])) {
+    for (int i = 0; i < itemCount; i++) {
+        if (util::equalsIgnoreCase(itemCode[i], token) ||
+            util::equalsIgnoreCase(itemName[i], token) ||
+            (singleSymbol && itemSymbol[i] == token[0])) {
             return i;
         }
     }
     return -1;
 }
 
-const ItemDef* findItemById(const BuildingMap* map, ItemId id) {
-    for (int i = 0; i < map->itemCount; i++) {
-        if (map->items[i].itemId == id) {
-            return &map->items[i];
+int findItemById(const ItemId itemAs[], int itemCount, ItemId id) {
+    for (int i = 0; i < itemCount; i++) {
+        if (itemAs[i] == id) {
+            return i;
         }
     }
-    return nullptr;
+    return -1;
 }
 
 const char* linkTypeName(LinkType type) {
@@ -404,24 +455,24 @@ const char* itemClassName(ItemClass cls) {
     }
 }
 
-void buildExitList(const BuildingMap* map, int room, char* out, int cap) {
+void buildExitList(const char roomId[][cfg::kIdLen], const int linkA[], const int linkB[],
+                   const LinkType linkType[], int linkCount, int room, char* out, int cap) {
     if (out == nullptr || cap <= 0) return;
     util::copyText(out, cap, "Exits:");
     bool any = false;
-    for (int i = 0; i < map->linkCount; i++) {
-        const Link& link = map->links[i];
+    for (int i = 0; i < linkCount; i++) {
         int other = -1;
-        if (link.a == room) other = link.b;
-        else if (link.b == room) other = link.a;
+        if (linkA[i] == room) other = linkB[i];
+        else if (linkB[i] == room) other = linkA[i];
         else continue;
 
         if (any) {
             util::appendStr(out, cap, ",");
         }
         util::appendStr(out, cap, " ");
-        util::appendStr(out, cap, map->rooms[other].id);
+        util::appendStr(out, cap, roomId[other]);
         util::appendStr(out, cap, " (");
-        util::appendStr(out, cap, linkTypeName(link.type));
+        util::appendStr(out, cap, linkTypeName(linkType[i]));
         util::appendStr(out, cap, ")");
         any = true;
     }

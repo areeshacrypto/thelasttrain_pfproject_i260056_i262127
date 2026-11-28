@@ -14,50 +14,74 @@ using namespace std;
 
 static const int kNoArgument = -1000000;
 
-static void reportAction(GameState* state, const char* message) {
+static void reportAction(int turn, const char* message) {
     cout << message << "\n";
     char entry[cfg::kAuditLineLen] = "Turn ";
-    util::appendInt(entry, cfg::kAuditLineLen, state->turn);
+    util::appendInt(entry, cfg::kAuditLineLen, turn);
     util::appendStr(entry, cfg::kAuditLineLen, ": ");
     util::appendStr(entry, cfg::kAuditLineLen, message);
     logger::addAudit(entry);
 }
 
-static void handleInspectCommand(GameState* state, const BuildingMap* map) {
-    applyCost(state, costInspect());
-    state->turn++;
-    clampResources(state);
+static void showStatus(int energy, int time, int score, int turn, int room,
+                       const bool itemTaken[], bool fuseInstalled,
+                       bool passengerRescued, bool catSecured,
+                       bool clueFour, bool clueTwo, bool clueSeven, bool cabinetUnlocked,
+                       const char roomId[][cfg::kIdLen], const char roomName[][cfg::kNameLen],
+                       const int roomFloor[], const int linkA[], const int linkB[],
+                       const LinkType linkType[], int linkCount,
+                       const char itemName[][cfg::kNameLen], const char itemSymbol[],
+                       const int itemRoom[], const ItemClass itemClass[],
+                       const ItemId itemAs[], int itemCount) {
+    viewer::printStatus(energy, time, score, turn, room, itemTaken, fuseInstalled,
+                        passengerRescued, catSecured, clueFour, clueTwo, clueSeven,
+                        cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB,
+                        linkType, linkCount, itemName, itemSymbol, itemRoom, itemClass,
+                        itemAs, itemCount);
+}
 
-    const Room& room = map->rooms[state->room];
-    cout << "You inspect " << room.id << " (" << room.name << ").\n";
+static void handleInspectCommand(int* energy, int* time, int* turn, int room,
+                                 const bool itemTaken[], bool fuseInstalled,
+                                 bool cabinetUnlocked, bool catSecured, bool passengerRescued,
+                                 const char roomId[][cfg::kIdLen], const char roomName[][cfg::kNameLen],
+                                 const char itemName[][cfg::kNameLen], const char itemSymbol[],
+                                 const int itemRoom[], const ItemClass itemClass[],
+                                 const ItemId itemAs[], int itemCount,
+                                 bool* over, bool* victory) {
+    int costEnergy = 0;
+    int costTime = 0;
+    costInspect(&costEnergy, &costTime);
+    applyCost(energy, time, costEnergy, costTime);
+    (*turn)++;
+    clampResources(energy, time);
+
+    cout << "You inspect " << roomId[room] << " (" << roomName[room] << ").\n";
 
     bool found = false;
-    for (int i = 0; i < map->itemCount; i++) {
-        const ItemDef& def = map->items[i];
-        if (def.room != state->room || state->itemTaken[def.itemId]) continue;
-        if (def.itemId == IT_TRAIN_KEY && !state->cabinetUnlocked) continue;
-        cout << "  - " << def.symbol << " " << def.name << " (" << itemClassName(def.cls) << ")\n";
+    for (int i = 0; i < itemCount; i++) {
+        if (itemRoom[i] != room || itemTaken[itemAs[i]]) continue;
+        if (itemAs[i] == IT_TRAIN_KEY && !cabinetUnlocked) continue;
+        cout << "  - " << itemSymbol[i] << " " << itemName[i] << " (" << itemClassName(itemClass[i]) << ")\n";
         found = true;
     }
     if (!found) {
         cout << "  Nothing else of interest here.\n";
     }
 
-    for (int i = 0; i < map->itemCount; i++) {
-        const ItemDef& def = map->items[i];
-        if (def.room != state->room) continue;
-        switch (def.itemId) {
+    for (int i = 0; i < itemCount; i++) {
+        if (itemRoom[i] != room) continue;
+        switch (itemAs[i]) {
             case IT_PANEL:
-                cout << "  The control panel is " << (state->fuseInstalled ? "powered" : "dark; it needs a Fuse") << ".\n";
+                cout << "  The control panel is " << (fuseInstalled ? "powered" : "dark; it needs a Fuse") << ".\n";
                 break;
             case IT_CABINET:
-                cout << "  The security cabinet is " << (state->cabinetUnlocked ? "open" : "locked by a 3-digit keypad") << ".\n";
+                cout << "  The security cabinet is " << (cabinetUnlocked ? "open" : "locked by a 3-digit keypad") << ".\n";
                 break;
             case IT_CAT:
-                cout << "  The cat is " << (state->catSecured ? "safe in the carrier" : "watching you") << ".\n";
+                cout << "  The cat is " << (catSecured ? "safe in the carrier" : "watching you") << ".\n";
                 break;
             case IT_PASSENGER:
-                cout << "  The injured passenger is " << (state->passengerRescued ? "ready to move" : "waiting for help") << ".\n";
+                cout << "  The injured passenger is " << (passengerRescued ? "ready to move" : "waiting for help") << ".\n";
                 break;
             default:
                 break;
@@ -65,50 +89,81 @@ static void handleInspectCommand(GameState* state, const BuildingMap* map) {
     }
 
     char entry[cfg::kAuditLineLen] = "Turn ";
-    util::appendInt(entry, cfg::kAuditLineLen, state->turn);
+    util::appendInt(entry, cfg::kAuditLineLen, *turn);
     util::appendStr(entry, cfg::kAuditLineLen, ": inspected ");
-    util::appendStr(entry, cfg::kAuditLineLen, room.id);
+    util::appendStr(entry, cfg::kAuditLineLen, roomId[room]);
     logger::addAudit(entry);
-    resolveDefeat(state);
+    resolveDefeat(energy, time, over, victory);
 }
 
-static void handleMoveCommand(GameState* state, const BuildingMap* map, char* tokens[], int count) {
+static bool handleMoveCommand(int* energy, int* time, int* room, int* emergencyTrips, int* turn,
+                              int roomCount,
+                              const bool itemTaken[], bool fuseInstalled,
+                              bool* over, bool* victory,
+                              const char roomId[][cfg::kIdLen], const char roomName[][cfg::kNameLen],
+                              const int roomFloor[], const int linkA[], const int linkB[],
+                              const LinkType linkType[], int linkCount,
+                              char* tokens[], int count) {
     if (count < 2) {
         cout << "Usage: MOVE <room>   (e.g. MOVE F3-R2)\n";
-        return;
+        return false;
     }
-    int target = findRoom(map, tokens[1]);
+    int target = findRoom(roomId, roomCount, tokens[1]);
     if (target < 0) {
         cout << "Unknown room '" << tokens[1] << "'. Type MAP to see the building.\n";
-        return;
+        return false;
     }
     char message[512];
-    if (switches::tryTraverse(state, map, target, message, (int)sizeof(message))) {
-        reportAction(state, message);
-        if (!state->over) viewer::printStatus(map, state);
-    } else {
-        cout << message << "\n";
+    if (switches::tryTraverse(energy, time, room, emergencyTrips, turn,
+                              itemTaken, fuseInstalled, over, victory,
+                              roomId, roomName, roomFloor, linkA, linkB, linkType,
+                              linkCount, roomCount, target, message, (int)sizeof(message))) {
+        reportAction(*turn, message);
+        return true;
     }
+    cout << message << "\n";
+    return false;
 }
 
-static void handleCollectCommand(GameState* state, const BuildingMap* map, char* tokens[], int count) {
+static bool handleCollectCommand(int* energy, int* time, int* score, int* room, int* turn,
+                                 int emergencyTrips,
+                                 bool itemTaken[], bool* clueFour, bool* clueTwo, bool* clueSeven,
+                                 bool cabinetUnlocked, bool* over, bool* victory,
+                                 const char roomId[][cfg::kIdLen],
+                                 const char itemCode[][cfg::kItemIdLen],
+                                 const char itemName[][cfg::kNameLen], const char itemSymbol[],
+                                 const int itemRoom[], const ItemClass itemClass[],
+                                 const ItemId itemAs[], const int itemValue[], int itemCount,
+                                 char* tokens[], int count) {
     if (count < 2) {
         cout << "Usage: COLLECT <item>   (id, name, or symbol)\n";
-        return;
+        return false;
     }
     char message[512];
-    if (switches::tryCollect(state, map, tokens[1], message, (int)sizeof(message))) {
-        reportAction(state, message);
-        if (!state->over) viewer::printStatus(map, state);
-    } else {
-        cout << message << "\n";
+    if (switches::tryCollect(energy, time, score, room, turn, emergencyTrips,
+                             itemTaken, clueFour, clueTwo, clueSeven,
+                             cabinetUnlocked, over, victory,
+                             roomId, itemCode, itemName, itemSymbol, itemRoom, itemClass,
+                             itemAs, itemValue, itemCount, tokens[1], message, (int)sizeof(message))) {
+        reportAction(*turn, message);
+        return true;
     }
+    cout << message << "\n";
+    return false;
 }
 
-static void handleUseCommand(GameState* state, const BuildingMap* map, char* tokens[], int count) {
+static bool handleUseCommand(int* energy, int* time, int* score, int* room, int* turn,
+                             bool itemTaken[], bool* clueFour, bool* clueTwo, bool* clueSeven,
+                             bool* fuseInstalled, bool* cabinetUnlocked, bool* passengerRescued,
+                             bool* catSecured, bool* trainBoarded, bool* over, bool* victory,
+                             int roomCount, const char roomId[][cfg::kIdLen],
+                             const char itemCode[][cfg::kItemIdLen],
+                             const char itemName[][cfg::kNameLen], const char itemSymbol[],
+                             const int itemRoom[], const ItemId itemAs[], int itemCount,
+                             char* tokens[], int count) {
     if (count < 2) {
         cout << "Usage: USE <item> [argument]\n";
-        return;
+        return false;
     }
     const char* target = tokens[1];
     ItemId id = IT_COUNT;
@@ -121,60 +176,112 @@ static void handleUseCommand(GameState* state, const BuildingMap* map, char* tok
     } else if (util::equalsIgnoreCase(target, "CARRIER")) {
         id = IT_CAT_CARRIER;
     } else {
-        int index = findItemDef(map, target);
+        int index = findItemDef(itemCode, itemName, itemSymbol, itemCount, target);
         if (index < 0) {
             cout << "Unknown item '" << target << "'.\n";
-            return;
+            return false;
         }
-        id = map->items[index].itemId;
+        id = itemAs[index];
     }
 
     int argument = kNoArgument;
     if (count >= 3 && !util::parseIntStrict(tokens[2], &argument)) {
         cout << "'" << tokens[2] << "' is not a valid code.\n";
-        return;
+        return false;
     }
     if (id == IT_CABINET && count < 3) {
         cout << "Usage: UNLOCK CABINET <code>\n";
-        return;
+        return false;
     }
 
     char message[512];
-    if (switches::tryUse(state, map, id, argument, message, (int)sizeof(message))) {
-        reportAction(state, message);
-        if (!state->over) viewer::printStatus(map, state);
-    } else {
-        cout << message << "\n";
+    if (switches::tryUse(energy, time, score, room, turn, itemTaken,
+                         clueFour, clueTwo, clueSeven, fuseInstalled, cabinetUnlocked,
+                         passengerRescued, catSecured, trainBoarded, over, victory,
+                         roomId, roomCount, itemName, itemRoom, itemAs, itemCount,
+                         id, argument, message, (int)sizeof(message))) {
+        reportAction(*turn, message);
+        return true;
     }
+    cout << message << "\n";
+    return false;
 }
 
-static void handleSaveCommand(const GameState* state, const BuildingMap* map) {
+static void handleSaveCommand(int energy, int time, int score, int room, int turn,
+                              int emergencyTrips,
+                              bool fuseInstalled, bool cabinetUnlocked, bool passengerRescued,
+                              bool catSecured, bool trainBoarded,
+                              const bool itemTaken[],
+                              const char roomId[][cfg::kIdLen],
+                              const char itemCode[][cfg::kItemIdLen],
+                              const ItemId itemAs[], int itemCount) {
     char error[256];
-    if (logger::saveGameStateToFile(state, map, cfg::kPathSaveGame, error, (int)sizeof(error))) {
+    if (logger::saveGameStateToFile(energy, time, score, room, turn, emergencyTrips,
+                                    fuseInstalled, cabinetUnlocked, passengerRescued,
+                                    catSecured, trainBoarded, itemTaken, roomId, itemCode,
+                                    itemAs, itemCount, cfg::kPathSaveGame, error, (int)sizeof(error))) {
         cout << "Game saved to " << cfg::kPathSaveGame << "\n";
     } else {
         cout << "Save failed: " << error << "\n";
     }
 }
 
-static void handleLoadCommand(GameState* state, const BuildingMap* map) {
+static void handleLoadCommand(int* energy, int* time, int* score, int* room, int* turn,
+                              int* emergencyTrips,
+                              bool* fuseInstalled, bool* cabinetUnlocked, bool* passengerRescued,
+                              bool* catSecured, bool* trainBoarded,
+                              bool* clueFour, bool* clueTwo, bool* clueSeven,
+                              bool itemTaken[], bool* over, bool* victory,
+                              const char roomId[][cfg::kIdLen], int roomCount,
+                              const char roomName[][cfg::kNameLen], const int roomFloor[],
+                              const int linkA[], const int linkB[], const LinkType linkType[],
+                              int linkCount, const char itemCode[][cfg::kItemIdLen],
+                              const char itemSymbol[], const char itemName[][cfg::kNameLen],
+                              const int itemRoom[], const ItemClass itemClass[],
+                              const ItemId itemAs[], int itemCount) {
     char error[256];
-    if (logger::loadGameStateFromFile(state, map, cfg::kPathSaveGame, error, (int)sizeof(error))) {
+    if (logger::loadGameStateFromFile(energy, time, score, room, turn, emergencyTrips,
+                                      fuseInstalled, cabinetUnlocked, passengerRescued,
+                                      catSecured, trainBoarded, clueFour, clueTwo, clueSeven,
+                                      itemTaken, over, victory, roomId, roomCount, itemCode,
+                                      itemName, itemSymbol, itemAs, itemCount,
+                                      cfg::kPathSaveGame, error, (int)sizeof(error))) {
         cout << "Game loaded from " << cfg::kPathSaveGame << "\n";
-        viewer::printStatus(map, state);
+        showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                   *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                   *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                   linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
     } else {
         cout << "Load failed: " << error << "\n";
     }
 }
 
-int simulator::runSimulation(const BuildingMap* map, GameState* state, FILE* input, bool echoCommands) {
+int simulator::runSimulation(int* energy, int* time, int* score, int* room,
+                             int* emergencyTrips, int* turn,
+                             bool itemTaken[],
+                             bool* clueFour, bool* clueTwo, bool* clueSeven,
+                             bool* fuseInstalled, bool* cabinetUnlocked, bool* passengerRescued,
+                             bool* catSecured, bool* trainBoarded, bool* over, bool* victory,
+                             const char roomId[][cfg::kIdLen], const char roomName[][cfg::kNameLen],
+                             const int roomFloor[],
+                             const int linkA[], const int linkB[], const LinkType linkType[],
+                             int linkCount, int roomCount,
+                             const char itemCode[][cfg::kItemIdLen], const char itemSymbol[],
+                             const char itemName[][cfg::kNameLen], const int itemRoom[],
+                             const ItemClass itemClass[], const ItemId itemAs[],
+                             const int itemValue[], int itemCount,
+                             const int grid[][cfg::kRoomsPerFloor],
+                             std::FILE* input, bool echoCommands) {
     cout << "\nType HELP for the command list.\n";
-    viewer::printStatus(map, state);
+    showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+               *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+               *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+               linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
 
     bool quit = false;
     char line[cfg::kMaxLineLen];
 
-    while (!state->over && !quit) {
+    while (!*over && !quit) {
         cout << "> ";
         cout.flush();
         if (fgets(line, sizeof(line), input) == nullptr) {
@@ -202,18 +309,61 @@ int simulator::runSimulation(const BuildingMap* map, GameState* state, FILE* inp
         if (strcmp(command, "HELP") == 0 || strcmp(command, "H") == 0 || strcmp(command, "?") == 0) {
             viewer::printHelp();
         } else if (strcmp(command, "LOOK") == 0 || strcmp(command, "L") == 0 || strcmp(command, "STATUS") == 0) {
-            viewer::printStatus(map, state);
+            showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                       *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                       *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                       linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
         } else if (strcmp(command, "MAP") == 0) {
-            viewer::printMapOverview(map, state);
+            viewer::printMapOverview(grid, roomId, *room);
         } else if (strcmp(command, "INSPECT") == 0 || strcmp(command, "SEARCH") == 0) {
-            handleInspectCommand(state, map);
-            if (!state->over) viewer::printStatus(map, state);
+            handleInspectCommand(energy, time, turn, *room, itemTaken, *fuseInstalled,
+                                 *cabinetUnlocked, *catSecured, *passengerRescued,
+                                 roomId, roomName, itemName, itemSymbol, itemRoom, itemClass,
+                                 itemAs, itemCount, over, victory);
+            if (!*over) {
+                showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                           *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                           *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                           linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
+            }
         } else if (strcmp(command, "MOVE") == 0 || strcmp(command, "GO") == 0) {
-            handleMoveCommand(state, map, tokens, count);
+            if (handleMoveCommand(energy, time, room, emergencyTrips, turn, roomCount,
+                                  itemTaken, *fuseInstalled, over, victory,
+                                  roomId, roomName, roomFloor, linkA, linkB, linkType,
+                                  linkCount, tokens, count)) {
+                if (!*over) {
+                    showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                               *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                               *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                               linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
+                }
+            }
         } else if (strcmp(command, "COLLECT") == 0 || strcmp(command, "TAKE") == 0 || strcmp(command, "PICK") == 0) {
-            handleCollectCommand(state, map, tokens, count);
+            if (handleCollectCommand(energy, time, score, room, turn, *emergencyTrips,
+                                     itemTaken, clueFour, clueTwo, clueSeven,
+                                     *cabinetUnlocked, over, victory,
+                                     roomId, itemCode, itemName, itemSymbol, itemRoom, itemClass,
+                                     itemAs, itemValue, itemCount, tokens, count)) {
+                if (!*over) {
+                    showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                               *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                               *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                               linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
+                }
+            }
         } else if (strcmp(command, "USE") == 0) {
-            handleUseCommand(state, map, tokens, count);
+            if (handleUseCommand(energy, time, score, room, turn, itemTaken,
+                                 clueFour, clueTwo, clueSeven, fuseInstalled, cabinetUnlocked,
+                                 passengerRescued, catSecured, trainBoarded, over, victory,
+                                 roomCount, roomId, itemCode, itemName, itemSymbol, itemRoom,
+                                 itemAs, itemCount, tokens, count)) {
+                if (!*over) {
+                    showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                               *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                               *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                               linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
+                }
+            }
         } else if (strcmp(command, "UNLOCK") == 0) {
             int codeIndex = 1;
             if (count >= 2 && util::equalsIgnoreCase(tokens[1], "CABINET")) {
@@ -227,9 +377,18 @@ int simulator::runSimulation(const BuildingMap* map, GameState* state, FILE* inp
                     cout << "'" << tokens[codeIndex] << "' is not a valid code.\n";
                 } else {
                     char message[512];
-                    if (switches::tryUse(state, map, IT_CABINET, code, message, (int)sizeof(message))) {
-                        reportAction(state, message);
-                        if (!state->over) viewer::printStatus(map, state);
+                    if (switches::tryUse(energy, time, score, room, turn, itemTaken,
+                                         clueFour, clueTwo, clueSeven, fuseInstalled, cabinetUnlocked,
+                                         passengerRescued, catSecured, trainBoarded, over, victory,
+                                         roomId, roomCount, itemName, itemRoom, itemAs, itemCount,
+                                         IT_CABINET, code, message, (int)sizeof(message))) {
+                        reportAction(*turn, message);
+                        if (!*over) {
+                            showStatus(*energy, *time, *score, *turn, *room, itemTaken, *fuseInstalled,
+                                       *passengerRescued, *catSecured, *clueFour, *clueTwo, *clueSeven,
+                                       *cabinetUnlocked, roomId, roomName, roomFloor, linkA, linkB, linkType,
+                                       linkCount, itemName, itemSymbol, itemRoom, itemClass, itemAs, itemCount);
+                        }
                     } else {
                         cout << message << "\n";
                     }
@@ -237,15 +396,27 @@ int simulator::runSimulation(const BuildingMap* map, GameState* state, FILE* inp
             }
         } else if (strcmp(command, "BOARD") == 0 || strcmp(command, "PREPARE") == 0) {
             char message[512];
-            if (switches::tryUse(state, map, IT_TRAIN_KEY, kNoArgument, message, (int)sizeof(message))) {
-                reportAction(state, message);
+            if (switches::tryUse(energy, time, score, room, turn, itemTaken,
+                                 clueFour, clueTwo, clueSeven, fuseInstalled, cabinetUnlocked,
+                                 passengerRescued, catSecured, trainBoarded, over, victory,
+                                 roomId, roomCount, itemName, itemRoom, itemAs, itemCount,
+                                 IT_TRAIN_KEY, kNoArgument, message, (int)sizeof(message))) {
+                reportAction(*turn, message);
             } else {
                 cout << message << "\n";
             }
         } else if (strcmp(command, "SAVE") == 0) {
-            handleSaveCommand(state, map);
+            handleSaveCommand(*energy, *time, *score, *room, *turn, *emergencyTrips,
+                              *fuseInstalled, *cabinetUnlocked, *passengerRescued,
+                              *catSecured, *trainBoarded, itemTaken, roomId, itemCode,
+                              itemAs, itemCount);
         } else if (strcmp(command, "LOAD") == 0) {
-            handleLoadCommand(state, map);
+            handleLoadCommand(energy, time, score, room, turn, emergencyTrips,
+                              fuseInstalled, cabinetUnlocked, passengerRescued,
+                              catSecured, trainBoarded, clueFour, clueTwo, clueSeven,
+                              itemTaken, over, victory, roomId, roomCount, roomName, roomFloor,
+                              linkA, linkB, linkType, linkCount, itemCode, itemSymbol,
+                              itemName, itemRoom, itemClass, itemAs, itemCount);
         } else if (strcmp(command, "QUIT") == 0 || strcmp(command, "EXIT") == 0) {
             quit = true;
         } else {
@@ -254,22 +425,27 @@ int simulator::runSimulation(const BuildingMap* map, GameState* state, FILE* inp
     }
 
     const char* result = "INCOMPLETE";
-    if (state->victory) result = "VICTORY";
-    else if (state->over) result = "DEFEAT";
+    if (*victory) result = "VICTORY";
+    else if (*over) result = "DEFEAT";
 
-    if (state->over) {
-        viewer::printResult(map, state);
+    if (*over) {
+        viewer::printResult(*energy, *time, *score, *turn, *victory);
     } else {
         cout << "\nSession ended (" << result << ").\n";
     }
 
     char error[256];
-    if (!logger::writeGameSummaryReport(state, map, result, cfg::kPathSummary, error, (int)sizeof(error))) {
+    if (!logger::writeGameSummaryReport(*energy, *time, *score, *room, *turn,
+                                        *fuseInstalled, *cabinetUnlocked, *passengerRescued,
+                                        *catSecured, *trainBoarded, *victory,
+                                        *clueFour, *clueTwo, *clueSeven, itemTaken,
+                                        roomId, roomName, result, cfg::kPathSummary,
+                                        error, (int)sizeof(error))) {
         cerr << "Summary write failed: " << error << "\n";
     } else {
         cout << "Session summary written to " << cfg::kPathSummary << "\n";
     }
 
-    if (state->victory) return 0;
-    return state->over ? 1 : 2;
+    if (*victory) return 0;
+    return *over ? 1 : 2;
 }

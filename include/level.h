@@ -25,65 +25,50 @@ enum ItemClass {
     CLASS_FIXED
 };
 
-struct Room {
-    char id[cfg::kIdLen];
-    char name[cfg::kNameLen];
-    int floorIdx;   // 0-based
-    int roomIdx;    // 0-based
-    int gridRow;    // from the GRID block in building.txt
-    int gridCol;
-};
+// The whole building lives in parallel arrays owned by main():
+//   rooms  -> roomId, roomName, roomFloor, roomSlot, roomGridRow, roomGridCol
+//   links  -> linkA, linkB, linkType
+//   items  -> itemCode, itemSymbol, itemName, itemRoom, itemClass, itemAs, itemValue
+//   grid   -> grid[floor][column]
+// Every function receives the slices it needs as pointers.
 
-struct Link {
-    int a;
-    int b;
-    LinkType type;
-};
-
-struct ItemDef {
-    char id[cfg::kItemIdLen];
-    ItemId itemId;
-    char symbol;
-    char name[cfg::kNameLen];
-    int room;
-    ItemClass cls;
-    int value;   // energy/time gain, or clue digit
-};
-
-struct BuildingMap {
-    Room rooms[cfg::kMaxRooms];
-    int roomCount;
-    Link links[cfg::kMaxLinks];
-    int linkCount;
-    ItemDef items[cfg::kMaxItems];
-    int itemCount;
-    // 2D coordinate grid filled from the GRID block: row = floor, col = room.
-    int roomGrid[cfg::kFloors][cfg::kRoomsPerFloor];
-};
-
-// Reads ./data/building.txt. Returns false and fills error[] on any problem;
-// the map is reset before parsing so a failed load never leaves half data.
-bool loadBuildingMap(const char* path, BuildingMap* map, char* error, int errorCap);
+// Reads ./data/building.txt into the arrays. Returns false and fills error[]
+// on any problem; the counts are reset before parsing so a failed load never
+// leaves half data behind.
+bool loadBuildingMap(const char* path,
+                     char roomId[][cfg::kIdLen], char roomName[][cfg::kNameLen],
+                     int roomFloor[], int roomSlot[], int roomGridRow[], int roomGridCol[],
+                     int* roomCount,
+                     int linkA[], int linkB[], LinkType linkType[], int* linkCount,
+                     char itemCode[][cfg::kItemIdLen], char itemSymbol[], char itemName[][cfg::kNameLen],
+                     int itemRoom[], ItemClass itemClass[], ItemId itemAs[], int itemValue[],
+                     int* itemCount,
+                     int grid[][cfg::kRoomsPerFloor],
+                     char* error, int errorCap);
 
 // Case-insensitive lookup by id, e.g. "f3-r2". Returns -1 when absent.
-int findRoom(const BuildingMap* map, const char* roomId);
+int findRoom(const char roomId[][cfg::kIdLen], int roomCount, const char* id);
 
 // Guards the start room before the state is initialised.
-bool validateStartingRoom(const BuildingMap* map, int roomIndex);
+bool validateStartingRoom(int roomCount, int roomIndex);
 
 // Returns the link type joining two rooms, or LINK_NONE.
-LinkType findLink(const BuildingMap* map, int from, int to);
+LinkType findLink(const int linkA[], const int linkB[], const LinkType linkType[],
+                  int linkCount, int from, int to);
 
 // Resolves an item by id, display name, or single-character symbol.
 // Returns -1 when nothing matches.
-int findItemDef(const BuildingMap* map, const char* token);
+int findItemDef(const char itemCode[][cfg::kItemIdLen], const char itemName[][cfg::kNameLen],
+                const char itemSymbol[], int itemCount, const char* token);
 
-const ItemDef* findItemById(const BuildingMap* map, ItemId id);
+// Returns the array index of an item id, or -1.
+int findItemById(const ItemId itemAs[], int itemCount, ItemId id);
 
 const char* linkTypeName(LinkType type);
 const char* itemClassName(ItemClass cls);
 
 // Writes "Exits: F3-R2 (locked door), F3-R4 (door)" into out[].
-void buildExitList(const BuildingMap* map, int room, char* out, int cap);
+void buildExitList(const char roomId[][cfg::kIdLen], const int linkA[], const int linkB[],
+                   const LinkType linkType[], int linkCount, int room, char* out, int cap);
 
 #endif  // LEVEL_H

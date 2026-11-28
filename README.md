@@ -1,6 +1,6 @@
 # The Last Train
 
-A deterministic, console-based rescue game in C++17. You have five floors, twenty
+A deterministic console rescue game in C++17. You have five floors, twenty
 rooms, one injured passenger, one stranded cat, and a train that will not leave
 without you.
 
@@ -39,7 +39,7 @@ Exit codes: `0` victory, `1` defeat, `2` incomplete/error.
 ./last_train data/test_win.txt && diff /tmp/a.txt out/game_summary.txt
 ```
 
-There is no randomness, no wall-clock input and no unordered iteration, so the
+There is no randomness, no clock input and no unordered iteration, so the
 two runs are byte-identical. `data/test_win.txt` scores **520/520** and finishes
 with 16 energy and 7 time.
 
@@ -55,11 +55,9 @@ that must be *refused without cost*:
 
 Expected signature on a correct build:
 
-| script | exit code | result | energy / time | turn | score |
-|---|---|---|---|---|---|
-| `data/test_win.txt` | 0 | VICTORY | 16 / 7 | 64 | 520/520 |
-| `data/test_lose.txt` | 1 | DEFEAT | 0 / 32 | 34 | 0/520 |
-| `data/test_compare.txt` | 2 | INCOMPLETE | 77 / 86 | 12 | 20/520 |
+* `data/test_win.txt`: exit 0, VICTORY, energy 16, time 7, turn 64, score 520/520
+* `data/test_lose.txt`: exit 1, DEFEAT, energy 0, time 32, turn 34, score 0/520
+* `data/test_compare.txt`: exit 2, INCOMPLETE, energy 77, time 86, turn 12, score 20/520
 
 To compare, exchange three things: the console transcript, `out/game_summary.txt`,
 and the process exit code (`echo $?` on bash, `echo %errorlevel%` on cmd). Any
@@ -70,23 +68,22 @@ otherwise the exe may load an older `libstdc++-6.dll` from `PATH` and crash.
 
 ## Commands
 
-| Command | Effect |
-| --- | --- |
-| `LOOK` / `STATUS` | room, resources, inventory, clues, exits |
-| `MAP` | 5x4 building overview |
-| `MOVE <room>` | move along an adjacent link (`MOVE F3-R2`) |
-| `INSPECT` | search the room (-1E, -1T) |
-| `COLLECT <item>` | id, name or symbol (-1E, -1T) |
-| `USE FUSE` | install the Fuse at the Control Panel |
-| `USE MEDKIT` | treat the passenger in F4-R1 |
-| `USE CAT_CARRIER` | secure the cat in F3-R3 |
-| `UNLOCK CABINET 427` | open the cabinet in F5-R1 |
-| `BOARD` | board the train at F5-R2 |
-| `SAVE` / `LOAD` | `./out/savegame.txt` |
-| `QUIT` | end the session |
+* `LOOK` / `STATUS`: room, resources, inventory, clues, exits
+* `MAP`: 5x4 building overview
+* `MOVE <room>`: move along an adjacent link (`MOVE F3-R2`)
+* `INSPECT`: search the room (costs 1 energy, 1 time)
+* `COLLECT <item>`: id, name or symbol (costs 1 energy, 1 time)
+* `USE FUSE`: install the Fuse at the Control Panel
+* `USE MEDKIT`: treat the passenger in F4-R1
+* `USE CAT_CARRIER`: secure the cat in F3-R3
+* `UNLOCK CABINET 427`: open the cabinet in F5-R1
+* `BOARD`: board the train at F5-R2
+* `SAVE` / `LOAD`: `./out/savegame.txt`
+* `QUIT`: end the session
 
-Movement costs: door/stair -2E/-1T, window -3E/-2T, lift -4E/-3T. Rejected
-actions (wrong room, missing item, locked door, no lift trip left) cost nothing.
+Movement costs: a door or staircase takes 2 energy and 1 time, a window takes
+3 energy and 2 time, a lift takes 4 energy and 3 time. Rejected actions (wrong
+room, missing item, locked door, no lift trip left) cost nothing.
 
 ## Rules that are easy to get wrong
 
@@ -98,7 +95,7 @@ actions (wrong room, missing item, locked door, no lift trip left) cost nothing.
 * **Cat / passenger**: the carrier / medical kit must be in the inventory *and*
   used on site.
 * **Boarding** at F5-R2 needs the Train Key, the installed Fuse, the rescued
-  passenger and the secured cat. The +100 full-mission bonus additionally needs
+  passenger and the secured cat. The +100 full mission bonus additionally needs
   the Master Key, all three clues, the open cabinet and the Lift Pass.
 
 ## Score (max 520)
@@ -108,8 +105,8 @@ cat 100, Fuse 20, Lift Pass 20, boarding 100, full mission 100.
 
 ## Balance note (important)
 
-The handout starts the player with **50 time**. A breadth-first search over the
-exact graph with the handout's costs proves that the cheapest full-clear route
+The handout starts the player with **50 time**. A breadth first search over the
+exact graph with the handout's costs proves that the cheapest full clear route
 needs **60 time**, so 50 makes victory impossible (the best finish is a defeat
 on the way back from F3-R3). This repository therefore starts at **100 time**
 in `include/config.h` and `data/initial-state.txt`. Every other number is
@@ -119,46 +116,45 @@ lower the start value. To restore the handout value, set `kStartTime` and the
 
 ## File formats
 
-`data/building.txt` - `VERSION`, `ROOMS n`, `ROOM id|name`, `LINKS n`,
+`data/building.txt`: `VERSION`, `ROOMS n`, `ROOM id|name`, `LINKS n`,
 `LINK a|b|TYPE` (`DOOR WINDOW STAIR LOCKED LIFT1 LIFT2 WALL`), `ITEMS n`,
 `ITEM id|symbol|name|room|class|value`, `GRID` (5 rows x 4 rooms, coordinates),
 `END`. Loaded once; never written.
 
 `data/initial-state.txt` - same schema as a savegame.
 
-`out/savegame.txt` - `VERSION`, `TURN`, `ROOM`, `ENERGY`, `TIME`, `SCORE`,
+`out/savegame.txt`: `VERSION`, `TURN`, `ROOM`, `ENERGY`, `TIME`, `SCORE`,
 `TRIPS`, `FUSE_INSTALLED`, `CABINET_OPEN`, `PASSENGER_RESCUED`, `CAT_SECURED`,
 `TRAIN_BOARDED`, `TAKEN id,id,...` (or `TAKEN -`).
 
-`out/game_summary.txt` - result, resources, score, objective checklist and the
+`out/game_summary.txt`: result, resources, score, objective checklist and the
 full audit trail; rewritten on every session end (VICTORY / DEFEAT /
 INCOMPLETE).
 
 ## Architecture
 
-| File | Responsibility |
-| --- | --- |
-| `include/config.h` | every balance constant and I/O path |
-| `include/state.h` | `GameState` POD, item enum, objective helpers |
-| `include/level.h` + `level.cpp` | map model, strict loader, `loadBuildingMap()`, `findRoom()`, `findLink()`, `validateStartingRoom()`, `buildExitList()` |
-| `include/physics.h` + `physics.cpp` | cost table, clamping, `resolveDefeat()` |
-| `include/switches.h` + `switches.cpp` | `tryTraverse()`, `tryCollect()`, `tryUse()` (locked door, lifts, cabinet, fuse, rescue, cat, boarding) |
-| `include/logger.h` + `logger.cpp` | audit trail, `saveGameStateToFile()`, `loadGameStateFromFile()`, `writeGameSummaryReport()` |
-| `include/viewer_iface.h` + `viewer_iface_core.cpp` | HUD, map, help, result |
-| `include/simulator.h` + `simulator.cpp` | command loop, `handleMoveCommand()`, `handleInspectCommand()`, `handleCollectCommand()`, `handleUseCommand()` |
-| `main_core.cpp` | argument parsing, state bootstrap, shutdown |
+* `include/config.h`: every balance constant and I/O path
+* `include/state.h`: item enum, objective helpers (`hasItem`, `clueCount`, `isFullMission`)
+* `include/level.h` + `level.cpp`: map model as parallel arrays, strict loader, `loadBuildingMap()`, `findRoom()`, `findLink()`, `validateStartingRoom()`, `buildExitList()`
+* `include/physics.h` + `physics.cpp`: cost table, clamping, `resolveDefeat()`
+* `include/switches.h` + `switches.cpp`: `tryTraverse()`, `tryCollect()`, `tryUse()` (locked door, lifts, cabinet, fuse, rescue, cat, boarding)
+* `include/logger.h` + `logger.cpp`: audit trail, `saveGameStateToFile()`, `loadGameStateFromFile()`, `writeGameSummaryReport()`
+* `include/viewer_iface.h` + `viewer_iface_core.cpp`: HUD, map, help, result
+* `include/simulator.h` + `simulator.cpp`: command loop, `handleMoveCommand()`, `handleInspectCommand()`, `handleCollectCommand()`, `handleUseCommand()`
+* `main_core.cpp`: argument parsing, state bootstrap, shutdown
 
-Data flow: `main_core` loads the map and the initial state, then `simulator`
-parses one command, `switches` validates and mutates `GameState` through
-`physics`, `logger` records the action, `viewer` renders the HUD. On exit
-`logger` writes the summary.
+Data flow: `main_core` owns the map arrays and the state variables, then
+`simulator` parses one command, `switches` validates and mutates the state
+through `physics`, `logger` records the action, `viewer` renders the HUD. On
+exit `logger` writes the summary.
 
 ## CLO mapping
 
-* **CLO-1** - branching command dispatch, adjacency checks, prerequisite ladders
+* **CLO-1**: branching command dispatch, adjacency checks, prerequisite ladders
   (key -> door, clues -> cabinet, fuse+pass -> lift 2, objectives -> boarding).
-* **CLO-2** - modular free functions, 1D/2D arrays (`rooms[]`, `links[]`,
-  `itemTaken[]`), `char` buffers, structs, pointers, no classes.
-* **CLO-3** - deterministic output, byte-stable savegame/summary, state restored
+* **CLO-2**: modular free functions, 1D/2D arrays (`roomId[]`, `linkA[]`,
+  `itemTaken[]`), `char` buffers, pointers passed explicitly, no classes and
+  no structs.
+* **CLO-3**: deterministic output, stable savegame/summary, state restored
   across sessions with `--load`.
 

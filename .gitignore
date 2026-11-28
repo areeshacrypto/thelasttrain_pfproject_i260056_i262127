@@ -10,8 +10,6 @@ cmake-build-*/
 .vscode/
 .idea/
 
-# Personal notes
-explanations/
 
 # OS noise
 Thumbs.db

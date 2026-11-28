@@ -9,10 +9,24 @@
 namespace viewer {
 
 void printBanner();
-void printStatus(const BuildingMap* map, const GameState* state);
-void printMapOverview(const BuildingMap* map, const GameState* state);
+
+void printStatus(int energy, int time, int score, int turn, int room,
+                 const bool itemTaken[], bool fuseInstalled,
+                 bool passengerRescued, bool catSecured,
+                 bool clueFour, bool clueTwo, bool clueSeven, bool cabinetUnlocked,
+                 const char roomId[][cfg::kIdLen], const char roomName[][cfg::kNameLen],
+                 const int roomFloor[], const int linkA[], const int linkB[],
+                 const LinkType linkType[], int linkCount,
+                 const char itemName[][cfg::kNameLen], const char itemSymbol[],
+                 const int itemRoom[], const ItemClass itemClass[],
+                 const ItemId itemAs[], int itemCount);
+
+void printMapOverview(const int grid[][cfg::kRoomsPerFloor],
+                      const char roomId[][cfg::kIdLen], int room);
+
 void printHelp();
-void printResult(const BuildingMap* map, const GameState* state);
+
+void printResult(int energy, int time, int score, int turn, bool victory);
 
 }  // namespace viewer
 

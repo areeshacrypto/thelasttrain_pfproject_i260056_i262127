@@ -1,78 +1,76 @@
-# ============================================================================
-#  SHARED COMPARISON SCRIPT
-#  Give this file to the other team and run it the same way:
-#      last_train data/test_compare.txt
-#  Every probe targets one rule. Compare the transcript line by line:
-#  same command, same accept/reject decision, same energy/time afterwards.
-# ============================================================================
+# SHARED COMPARISON SCRIPT
+# Give this file to the other team and run it the same way:
+#     last_train data/test_compare.txt
+# Every probe targets one rule. Compare the transcript line by line:
+# same command, same accept/reject decision, same energy/time afterwards.
 
-# --- Probe 1: no direct passage from the lobby to the waiting area.
-#     Must be rejected and cost nothing.
+# Probe 1: no direct passage from the lobby to the waiting area.
+# Must be rejected and cost nothing.
 MOVE F1-R3
 
-# --- Probe 2: searching an empty room costs 1 energy and 1 time.
+# Probe 2: searching an empty room costs 1 energy and 1 time.
 INSPECT
 
-# --- Probe 3: a staircase costs 2 energy and 1 time.
+# Probe 3: a staircase costs 2 energy and 1 time.
 MOVE F2-R1
 
-# --- Probe 4: another staircase, same cost.
+# Probe 4: another staircase, same cost.
 MOVE F3-R1
 
-# --- Probe 5: the locked door without the Master Key must be refused,
-#     costing nothing.
+# Probe 5: the locked door without the Master Key must be refused,
+# costing nothing.
 MOVE F3-R2
 
-# --- Probe 6: the cat lives on this floor but not in this room;
-#     collecting is refused, costing nothing.
+# Probe 6: the cat lives on this floor but not in this room;
+# collecting is refused, costing nothing.
 COLLECT CAT
 
-# --- Probe 7: back down the stairs.
+# Probe 7: back down the stairs.
 MOVE F2-R1
 
-# --- Probe 8: and down again to the lobby.
+# Probe 8: and down again to the lobby.
 MOVE F1-R1
 
-# --- Probe 9: a window costs 3 energy and 2 time.
+# Probe 9: a window costs 3 energy and 2 time.
 MOVE F1-R2
 
-# --- Probe 10: picking up an item costs 1 energy and 1 time, and scores +10.
+# Probe 10: picking up an item costs 1 energy and 1 time, and scores +10.
 COLLECT MASTER_KEY
 
-# --- Probe 11: back out through the window, same cost.
+# Probe 11: back out through the window, same cost.
 MOVE F1-R1
 
-# --- Probe 12: climb the stairs again.
+# Probe 12: climb the stairs again.
 MOVE F2-R1
 
-# --- Probe 13: and once more.
+# Probe 13: and once more.
 MOVE F3-R1
 
-# --- Probe 14: now the locked door should open with the Master Key,
-#     costing 2 energy and 1 time.
+# Probe 14: now the locked door should open with the Master Key,
+# costing 2 energy and 1 time.
 MOVE F3-R2
 
-# --- Probe 15: a clue costs 1 energy and 1 time, and scores +10.
+# Probe 15: a clue costs 1 energy and 1 time, and scores +10.
 COLLECT CLUE_FOUR
 
-# --- Probe 16: the Control Panel is fixed equipment on floor 3, not an item;
-#     refused, no cost.
+# Probe 16: the Control Panel is fixed equipment on floor 3, not an item;
+# refused, no cost.
 COLLECT PANEL
 
-# --- Probe 17: the Fuse has not been picked up yet; refused, no cost.
+# Probe 17: the Fuse has not been picked up yet; refused, no cost.
 USE FUSE
 
-# --- Probe 18: the cabinet is on floor 5; refused here, no cost.
+# Probe 18: the cabinet is on floor 5; refused here, no cost.
 UNLOCK CABINET 427
 
-# --- Probe 19: no Medical Kit in the inventory; refused, no cost.
+# Probe 19: no Medical Kit in the inventory; refused, no cost.
 USE MEDKIT
 
-# --- Probe 20: no passage from floor 3 to the platform.
+# Probe 20: no passage from floor 3 to the platform.
 MOVE F5-R2
 
-# --- Probe 21: boarding away from the platform is refused, no cost.
+# Probe 21: boarding away from the platform is refused, no cost.
 BOARD
 
-# --- End of comparison run. The game should report INCOMPLETE and exit 2.
+# End of comparison run. The game should report INCOMPLETE and exit 2.
 QUIT

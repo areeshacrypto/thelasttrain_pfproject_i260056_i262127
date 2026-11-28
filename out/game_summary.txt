@@ -1,5 +1,4 @@
-THE LAST TRAIN - SESSION SUMMARY
-================================
+THE LAST TRAIN: SESSION SUMMARY
 Result       : VICTORY
 Turn count   : 64
 Final room   : F5-R2 (Train Boarding Platform)

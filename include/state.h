@@ -1,8 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include <cstdio>
-
 #include "config.h"
 
 // Stable item identifiers. The textual ids in data/building.txt are mapped
@@ -30,66 +28,35 @@ enum ItemId {
     IT_COUNT
 };
 
-// The complete serialisable game state. POD only: no pointers, no classes,
-// so a snapshot is exactly what gets written to out/savegame.txt.
-struct GameState {
-    int energy;
-    int time;
-    int score;
-    int room;             // index into BuildingMap::rooms
-    int emergencyTrips;   // remaining Lift 2 trips before repair
-    int turn;             // accepted actions, used by the audit log
+// The game state is kept as plain variables and a bool array inside main().
+// Every function receives the pieces it needs through pointers, so there is
+// no struct anywhere in the program.
 
-    bool clueFour;
-    bool clueTwo;
-    bool clueSeven;
-
-    bool fuseInstalled;
-    bool cabinetUnlocked;
-    bool passengerRescued;
-    bool catSecured;
-    bool trainBoarded;
-
-    bool itemTaken[IT_COUNT];
-
-    bool over;
-    bool victory;
-};
-
-inline void initGameState(GameState* state, int startRoom) {
-    *state = GameState{};
-    state->energy = cfg::kStartEnergy;
-    state->time = cfg::kStartTime;
-    state->score = 0;
-    state->room = startRoom;
-    state->emergencyTrips = cfg::kStartEmergencyTrips;
-    state->turn = 0;
+inline bool hasItem(const bool itemTaken[], ItemId id) {
+    return itemTaken[id];
 }
 
-inline bool hasItem(const GameState* state, ItemId id) {
-    return state->itemTaken[id];
-}
-
-inline int clueCount(const GameState* state) {
+inline int clueCount(bool clueFour, bool clueTwo, bool clueSeven) {
     int count = 0;
-    if (state->clueFour) ++count;
-    if (state->clueTwo) ++count;
-    if (state->clueSeven) ++count;
+    if (clueFour) ++count;
+    if (clueTwo) ++count;
+    if (clueSeven) ++count;
     return count;
 }
 
-// True when every optional and mandatory objective is complete except the
-// final boarding action itself. Used to award the +100 mission bonus.
-inline bool isFullMission(const GameState* state) {
-    return state->itemTaken[IT_MASTER_KEY] && state->clueFour &&
-           state->clueTwo && state->clueSeven && state->cabinetUnlocked &&
-           state->itemTaken[IT_TRAIN_KEY] && state->passengerRescued &&
-           state->catSecured && state->fuseInstalled &&
-           state->itemTaken[IT_LIFT_PASS] && state->trainBoarded;
+// True when every optional and mandatory objective is complete, including
+// the final boarding action itself. Used to award the +100 mission bonus.
+inline bool isFullMission(bool clueFour, bool clueTwo, bool clueSeven,
+                          const bool itemTaken[], bool cabinetUnlocked,
+                          bool passengerRescued, bool catSecured,
+                          bool fuseInstalled, bool trainBoarded) {
+    return itemTaken[IT_MASTER_KEY] && clueFour && clueTwo && clueSeven &&
+           cabinetUnlocked && itemTaken[IT_TRAIN_KEY] && passengerRescued &&
+           catSecured && fuseInstalled && itemTaken[IT_LIFT_PASS] && trainBoarded;
 }
 
-// Renders the discovered digits, e.g. "4 _ 7". Declared here and defined in
-// switches.cpp because it is shared by the HUD and the collect logic.
-void formatClueCode(const GameState* state, char* out, int cap);
+// Renders the discovered digits, e.g. "4 _ 7". Defined in switches.cpp
+// because both the HUD and the collect logic use it.
+void formatClueCode(bool clueFour, bool clueTwo, bool clueSeven, char* out, int cap);
 
 #endif  // STATE_H

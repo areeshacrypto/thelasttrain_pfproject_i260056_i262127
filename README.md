@@ -43,6 +43,31 @@ There is no randomness, no wall-clock input and no unordered iteration, so the
 two runs are byte-identical. `data/test_win.txt` scores **520/520** and finishes
 with 16 energy and 7 time.
 
+## Comparing with another build
+
+`data/test_compare.txt` is a short acceptance script meant to be run by any
+team on any copy of the game. Every probe targets one rule, including the ones
+that must be *refused without cost*:
+
+```sh
+./last_train data/test_compare.txt
+```
+
+Expected signature on a correct build:
+
+| script | exit code | result | energy / time | turn | score |
+|---|---|---|---|---|---|
+| `data/test_win.txt` | 0 | VICTORY | 16 / 7 | 64 | 520/520 |
+| `data/test_lose.txt` | 1 | DEFEAT | 0 / 32 | 34 | 0/520 |
+| `data/test_compare.txt` | 2 | INCOMPLETE | 77 / 86 | 12 | 20/520 |
+
+To compare, exchange three things: the console transcript, `out/game_summary.txt`,
+and the process exit code (`echo $?` on bash, `echo %errorlevel%` on cmd). Any
+difference in one of those numbers above points at the rule that diverges.
+
+If you built with the winlibs GCC 16 download, add `-static` to the build line;
+otherwise the exe may load an older `libstdc++-6.dll` from `PATH` and crash.
+
 ## Commands
 
 | Command | Effect |
